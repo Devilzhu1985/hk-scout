@@ -5,7 +5,7 @@ An offline field notebook for environment art and lighting reference. Use a phon
 ## Test on your phone
 
 - **Browser app:** [Open Scout](https://devilzhu1985.github.io/hk-scout/) in Chrome on Android or Safari on iPhone. Open once online, then add it to your home screen and test an offline reload.
-- **Android phone trial:** download `scout-2.1.1-preview.1-debug.apk` from the [Android test release](https://github.com/Devilzhu1985/hk-scout/releases/tag/v2.1.1-preview.1). This is the complete Scout app with its light meter built in, not a separate light-meter utility. This personal test build includes direct sensor access; browser mode generally uses manual light readings. Actual sensor availability and accuracy still need testing on your phone.
+- **Android phone trial:** download `scout-2.1.2-preview.1-debug.apk` from the [Android test release](https://github.com/Devilzhu1985/hk-scout/releases/tag/v2.1.2-preview.1). This is the complete Scout app with its light meter built in, not a separate light-meter utility. This personal test build includes direct sensor access; browser mode generally uses manual light readings. Actual sensor availability and accuracy still need testing on your phone.
 - If the old Hong Kong interface appears, export any existing records, close all tabs/windows of the app and reopen the link. Do not clear site data to update. Once on Scout 2, use **Update app** when offered.
 - Web and Android installations have separate local notebooks. Export a field ZIP and import it into the other installation to move records. The APK is a debug build, not an app-store release; export before uninstalling it.
 
@@ -27,7 +27,7 @@ For phone browsers, use HTTPS and open the app once online before relying on off
 
 ## The shooting workflow
 
-1. **Capture here now.** First use can create a dated trip without typing a city or name. Or choose **Plan a trip** for an itinerary and time zone. Every new stop requests a fresh GPS fix in the background. Coordinates, accuracy, capture time and fix time save automatically; online weather is fetched for the new location. Permission/network failure never blocks shooting.
+1. **Capture here now.** First use can create a dated trip without typing a city or name. Or choose **Plan a trip** for an itinerary and time zone. Opening the Sony slate for an open stop automatically requests a fresh GPS fix in the background, including when reopening it. Returning from light entry or cancelling a light sample stays in the same slate session without requesting GPS again. Viewing a finished stop preserves its historic coordinates. Coordinates, accuracy, capture time and fix time save automatically; online weather is fetched for the new location. Permission/network failure never blocks shooting.
 2. **Measure light on the Sony slate, then photograph it.** On supported devices, tap **Measure EV + lux · 4 seconds**. Hold the screen facing up at the stop with the sensor clear, then turn the saved slate toward the Sony. Or use **Enter EV / lux** for a separate meter reading. The slate shows the saved reading, source and time together with the code, current clock, GPS and readable trip/stop IDs. Photograph it with your A7CR, then tap **Code photographed → continue**. Choose **Phone only / skip code** when appropriate. This is your confirmation, not automatic QR recognition.
 3. **Take a phone reference.** Use **Take reference photo**, choose an existing image, or skip the phone image when shooting only with Sony. Original phone files are retained separately from rendered previews.
 4. **Record more lighting only if needed.** A reading saved from the slate already satisfies this step. Add different zones under Lighting details & readings; if none exists, the guided flow still offers a reading or **Skip lighting**. The lens cover remains an uncalibrated target; preview color samples are rendered sRGB, not measured CCT or albedo.
@@ -37,6 +37,8 @@ For phone browsers, use HTTPS and open the app once online before relying on off
 8. **Prepare the assistant handoff.** Export the trip's handoff ZIP parts and supply those with your organization priorities. Exports do not automatically upload to an AI service.
 
 The header switches between **English** and **中文 (Simplified Chinese)**. This preference belongs to the device. UI labels, dates and the optional Hong Kong itinerary switch; your names, notes, filenames, canonical roles and original metadata are preserved.
+
+The slate uses a compact photograph area for the stop code, time, EV/lux, GPS, weather summary, QR and readable IDs. **Details & instructions** holds complete measurement provenance, full weather and explanations. Its bottom action area stays visible on small screens and when the content scrolls; measuring, continuing and skipping do not require scrolling to the bottom. GPS refresh/failure labels distinguish a previous saved fix from a newly obtained fix. A pending automatic GPS response cannot overwrite a stop that was finished or whose coordinates changed while the request was running.
 
 The slate QR contains only `{app: "scout", v: 2, tripId, setId, code}`. Its identity fields are also printed as text; it does not contain a URL, upload data, or replace the displayed lighting/GPS details. Automatic QR recognition is not implemented. The large stop code supports manual matching; photographing the live clock helps review Sony clock offsets.
 
@@ -70,7 +72,7 @@ See Android's [manual CCT controls](https://developer.android.com/reference/andr
 
 ### Updating the installed app
 
-In Scout 2.1.0 or newer, tap **Update Scout** to install 2.1.1. For an older build without that button, install the APK from the release link above. Install over your existing Scout; do not uninstall it. Later, the button checks public GitHub releases, downloads a newer compatible APK, verifies its SHA-256, package identity, increasing Android version code and signing certificate, then opens Android's installer. Android may ask you to allow installations from Scout and will ask you to approve the update. Opening the installer is not a claim that installation completed. Keep a field backup.
+In Scout 2.1.0 or newer, tap **Update Scout** to install 2.1.2. For an older build without that button, install the APK from the release link above. Install over your existing Scout; do not uninstall it. Later, the button checks public GitHub releases, downloads a newer compatible APK, verifies its SHA-256, package identity, increasing Android version code and signing certificate, then opens Android's installer. Android may ask you to allow installations from Scout and will ask you to approve the update. Opening the installer is not a claim that installation completed. Keep a field backup.
 
 Browser updates remain separate: new offline assets wait behind the **Update app** banner and save the open record before activating. The header update checker identifies the browser edition rather than attempting to install an APK there.
 

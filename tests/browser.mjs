@@ -35,14 +35,15 @@ try{
   await expect(page.locator('#qr')).toBeVisible();
   await expect(page.locator('#slate-photo')).toContainText('Trip ID');
   await expect(page.locator('#slate-photo')).toContainText('Stop ID');
-  await expect(page.locator('#slate-light')).toContainText('No light reading yet');
+  await expect(page.locator('#slate-light')).toContainText('Light reading · optional');
   if(engine===chromium)await expect(page.locator('#slate-weather')).toContainText('Overcast');
   await expect(page.getByRole('button',{name:'Measure EV + lux · 4 seconds',exact:true})).toHaveCount(0);
   await page.screenshot({path:path.join(out,'mobile-slate.png'),fullPage:true});
+  await assertSlateActionsVisible(page);
   await page.getByRole('button',{name:'Code photographed → continue',exact:true}).click();await expect(page.locator('#modal')).not.toBeVisible();
   await page.locator('#lighting-details summary').click();await expect(page.getByText('Live lux is unavailable in this browser',{exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'Measure light',exact:true})).toHaveCount(0);
-  await expect(page.getByRole('link',{name:'Download Scout for Android',exact:true})).toHaveAttribute('href',/scout-2\.1\.1-preview\.1-debug\.apk$/);
+  await expect(page.getByRole('link',{name:'Download Scout for Android',exact:true})).toHaveAttribute('href',/scout-2\.1\.2-preview\.1-debug\.apk$/);
   await expect(page.getByText(/complete Scout app/)).toBeVisible();
   await page.locator('#set-name').fill('Sham Shui Po · awning');
   await page.locator('#set-name').press('Tab');
@@ -262,7 +263,7 @@ try{
   const slateContext=await browser.newContext({viewport:{width:390,height:844}});
   let weatherRequests=0,weatherError=false;
   await slateContext.route('https://api.open-meteo.com/**',route=>{weatherRequests++;const url=new URL(route.request().url());if(url.searchParams.get('latitude')!=='22.32'||url.searchParams.get('longitude')!=='114.17')throw Error('Weather coordinates were not rounded');return route.fulfill(weatherError?{status:503,body:'Unavailable'}:{json:weatherFixture()});});
-  await slateContext.addInitScript(()=>{Object.defineProperty(window,'AmbientLightSensor',{configurable:true,value:undefined});navigator.geolocation.getCurrentPosition=ok=>ok({timestamp:Date.now(),coords:{latitude:22.3193,longitude:114.1694,accuracy:12}});});
+  await slateContext.addInitScript(()=>{window.scoutGPSCalls=0;Object.defineProperty(window,'AmbientLightSensor',{configurable:true,value:undefined});navigator.geolocation.getCurrentPosition=ok=>{window.scoutGPSCalls++;ok({timestamp:Date.now(),coords:{latitude:22.3193,longitude:114.1694,accuracy:12}});};});
   const slatePage=await slateContext.newPage();slatePage.on('pageerror',e=>errors.push(e.message));
   await slatePage.goto(origin);await slatePage.getByRole('button',{name:'Capture here now',exact:true}).click();
   await expect(slatePage.locator('#slate-weather')).toContainText('Overcast');
@@ -270,6 +271,7 @@ try{
   await expect(slatePage.locator('#slate-weather')).toContainText('Open-Meteo');
   await expect(slatePage.locator('#slate-zone')).toHaveText('Asia/Hong_Kong');
   await expect(slatePage.locator('#slate-time')).not.toBeEmpty();
+  await expect.poll(()=>slatePage.evaluate(()=>window.scoutGPSCalls)).toBe(1);
   await slatePage.getByRole('button',{name:'Enter EV / lux',exact:true}).click();
   await expect(slatePage.locator('#reading-form [name=method]')).toHaveValue('camera_ev');
   await slatePage.locator('#reading-form [name=value]').fill('8.5');
@@ -278,6 +280,7 @@ try{
   await expect(slatePage.locator('#slate-light strong')).toHaveText('8.5');
   await expect(slatePage.locator('#slate-light')).toContainText('Meter EV100 · entered');
   await expect(slatePage.locator('#slate-light')).not.toContainText('Estimated');
+  await expect.poll(()=>slatePage.evaluate(()=>window.scoutGPSCalls)).toBe(1); // Return from entry is the same slate session.
   await slatePage.getByRole('button',{name:'Code photographed → continue',exact:true}).click();
   await expect(slatePage.locator('#modal')).not.toBeVisible();
   await slatePage.getByRole('button',{name:'Sony only / skip phone photo',exact:true}).click();
@@ -287,7 +290,19 @@ try{
   await expect(slatePage.locator('#slate-light')).toContainText('测光表 EV100');
   await expect(slatePage.locator('#slate-photo')).toContainText('行程 ID');
   await expect(slatePage.locator('#slate-weather')).toContainText('阴天');
-  await slatePage.screenshot({path:path.join(out,'slate-chinese.png'),fullPage:true});
+  await expect.poll(()=>slatePage.evaluate(()=>window.scoutGPSCalls)).toBe(2); // Explicit reopening gets a fresh fix.
+  await expect(slatePage.locator('#slate-gps')).not.toContainText('正在刷新');
+  await expect(slatePage.locator('.slate-details')).not.toHaveAttribute('open','');
+  await slatePage.screenshot({path:path.join(out,'slate-chinese.png')});
+  for(const viewport of [{width:390,height:844},{width:360,height:640},{width:320,height:568},{width:844,height:390}]){
+    await slatePage.setViewportSize(viewport);await assertSlateActionsVisible(slatePage);
+    await slatePage.locator('.slate-details summary').click();await assertSlateActionsVisible(slatePage);
+    await slatePage.locator('.slate-scroll').evaluate(el=>el.scrollTop=el.scrollHeight);await assertSlateActionsVisible(slatePage);
+    await slatePage.locator('.slate-details summary').click();
+    await slatePage.locator('.slate-scroll').evaluate(el=>el.scrollTop=0);
+    if(viewport.width===360)await slatePage.screenshot({path:path.join(out,'slate-small-phone.png')});
+  }
+  await slatePage.setViewportSize({width:390,height:844});
   await slatePage.getByRole('button',{name:'识别码已拍摄 → 继续',exact:true}).click();
   await expect(slatePage.locator('#modal')).not.toBeVisible();
   await slatePage.locator('#language').selectOption('en');
@@ -308,7 +323,40 @@ try{
   await expect(slatePage.locator('#slate-weather')).toContainText('Weather unavailable.');
   await expect(slatePage.locator('#slate-weather')).not.toContainText('27 °C');
 
+  // A reopened live slate refreshes GPS without requiring a button, but a late
+  // fix cannot rewrite a stop after it is finished.
+  const gpsContext=await browser.newContext({viewport:{width:360,height:640}});
+  await gpsContext.route('https://api.open-meteo.com/**',route=>route.fulfill({json:weatherFixture()}));
+  await gpsContext.addInitScript(()=>{window.scoutGPSCalls=0;window.holdGPS=false;window.nextLat=22.31;navigator.geolocation.getCurrentPosition=(ok,fail)=>{window.scoutGPSCalls++;const resolve=()=>ok({timestamp:Date.now(),coords:{latitude:window.nextLat,longitude:114.17,accuracy:10}});if(window.holdGPS)window.resolveGPS=resolve;else resolve();};});
+  const gpsPage=await gpsContext.newPage();gpsPage.on('pageerror',e=>errors.push(e.message));
+  await gpsPage.goto(origin);await gpsPage.getByRole('button',{name:'Capture here now',exact:true}).click();
+  await expect(gpsPage.locator('#slate-gps')).toContainText('22.31000');
+  await expect(gpsPage.locator('#slate-gps')).not.toContainText('Refreshing');
+  await gpsPage.locator('#modal [data-action=slate-skip]').click();await expect(gpsPage.locator('#modal')).not.toBeVisible();
+  await gpsPage.evaluate(()=>{window.holdGPS=true;window.nextLat=22.99;});
+  await gpsPage.getByRole('button',{name:'Show camera slate',exact:true}).click();
+  await expect.poll(()=>gpsPage.evaluate(()=>window.scoutGPSCalls)).toBe(2);
+  await expect(gpsPage.locator('#slate-gps')).toContainText('Refreshing GPS');
+  await expect(gpsPage.locator('#slate-gps')).toContainText('Previous fix');
+  await assertSlateActionsVisible(gpsPage);
+  await gpsPage.locator('#modal [data-action=slate-confirm]').click();await expect(gpsPage.locator('#modal')).not.toBeVisible();
+  await gpsPage.getByRole('button',{name:'Finish stop now',exact:true}).click();
+  await gpsPage.evaluate(()=>window.resolveGPS());
+  await expect(gpsPage.getByRole('heading',{name:'Stop complete',exact:true})).toBeVisible();
+  await gpsPage.getByRole('button',{name:'Show camera slate',exact:true}).click();
+  await expect(gpsPage.locator('#slate-gps')).toContainText('Saved GPS');
+  await expect(gpsPage.locator('#slate-gps')).toContainText('22.31000');
+  await expect.poll(()=>gpsPage.evaluate(()=>window.scoutGPSCalls)).toBe(2);
+
+
   if(errors.length)throw Error(errors.join('\n'));
   console.log('PASS '+engine.name()+': capture-to-handoff, offline restore, bilingual slate EV/manual/sensor cancellation, automatic weather/time zone, opt-out and failure fallback. No page errors.');
 }finally{await browser?.close();server.kill();}
 function assertNoOverflow(size){if(size.width>size.viewport+1)throw Error('Mobile horizontal overflow: '+JSON.stringify(size));}
+async function assertSlateActionsVisible(page){
+  const result=await page.locator('.slate-footer').evaluate(footer=>{
+    const actions=[...footer.querySelectorAll('button:not([hidden])')];
+    return actions.map(button=>{const r=button.getBoundingClientRect(),top=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {action:button.dataset.action,visible:r.top>=0&&r.bottom<=innerHeight+1&&r.left>=0&&r.right<=innerWidth+1&&r.height>=44&&top?.closest('button')===button};});
+  });
+  if(result.some(r=>!r.visible))throw Error('Slate action is offscreen or obstructed: '+JSON.stringify(result));
+}

@@ -1,4 +1,15 @@
 export const zh=Object.fromEntries(`
+Light reading · optional	光照读数 · 可选
+Details & instructions	详情与说明
+Reading source	读数来源
+Weather estimate	天气估计
+Current location	当前位置
+Refreshing GPS…	正在刷新 GPS…
+Previous fix	上次定位
+Saved GPS	已保存的定位
+GPS unavailable	暂时无法定位
+Optional: screen up, sensor clear. Measure, then photograph the slate.	测光可选：屏幕朝上、传感器无遮挡；测完后拍下识别板。
+Enter a meter reading if needed, then photograph the slate.	可输入测光表读数，然后拍下识别板。
 Weather · online estimate	天气 · 在线估计
 Device clock	设备时钟
 Cloud	云量
@@ -370,7 +381,7 @@ Save sample in image notes	将取样保存到图片笔记
 Saved GPS with low accuracy. Add a landmark note.	已保存低精度 GPS，请补充地标说明。
 Saved on this device	已保存到本机
 Saving…	正在保存…
-Scout 2.1.1 · local files first · no analytics or automatic cloud/AI upload	Scout 2.1.1 · 本地文件优先 · 无统计跟踪或自动云端 / AI 上传
+Scout 2.1.2 · local files first · no analytics or automatic cloud/AI upload	Scout 2.1.2 · 本地文件优先 · 无统计跟踪或自动云端 / AI 上传
 Scout ZIP, desktop catalogue ZIP, or original v1 JSON backup.	Scout ZIP、电脑目录 ZIP 或原 v1 JSON 备份。
 Scout built-in light meter	Scout 内置测光
 Scout for Android	安卓 Scout

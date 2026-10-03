@@ -1,5 +1,5 @@
 {
-  "name": "hk-scout", "version": "2.1.1", "private": true, "type": "module",
+  "name": "hk-scout", "version": "2.1.2", "private": true, "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
     "start": "node scripts/serve.mjs",

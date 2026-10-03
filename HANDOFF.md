@@ -1,10 +1,18 @@
-# Scout 2.1.1 implementation handoff
+# Scout 2.1.2 implementation handoff
 
 Date: 2026-10-03. Repository: hk-scout. This is the local implementation handoff, distinct from the shoot-specific HANDOFF.md generated inside each export.
 
 ## Phone test publication
 
-The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.1-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.2-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+
+## Automatic slate GPS and compact layout · 2.1.2
+
+User request: opening the camera slate should refresh GPS automatically, and the dense slate should not require scrolling to reach the next-step buttons. Each explicit opening of an open stop's slate starts a fresh fix, with in-flight requests deduplicated. Initial stop creation uses that same path instead of a second GPS request. Returning from manual light entry or cancelling a sample does not restart GPS. Existing edited subject names remain protected. GPS failure keeps the previous fix clearly labelled; a late response after finishing the stop or changing its coordinates is discarded. Opening a finished stop's slate preserves historical GPS.
+
+Layout separates a scrollable capture/details area from a persistent action footer. Code, current clock, EV with calibration label, GPS, abbreviated weather and all QR fields remain visible in the photograph area. Detailed source/protocol/timestamps, full weather and explanations are collapsed. English and Chinese labels remain supported; record schema and QR payload are unchanged. VersionName 2.1.2 / versionCode 6; same application ID/signing identity.
+
+Validation: 27 JS tests; Chromium end-to-end workflow with exact GPS request counts, no repeat request on manual-reading return, late-fix rejection after finish, and retained historical GPS. All footer buttons were checked for viewport bounds, 44px minimum target and unobstructed hit targets at 390×844, 360×640, 320×568 and 844×390, with details open/closed and content scrolled. Chinese screenshots were inspected at 390×844 and 360×640. Android build and existing native geometry tests pass; physical phone UI verification remains a separate check.
 
 ## Camera preview correction and lighting slate · 2.1.1
 
@@ -117,8 +125,8 @@ Required physical trial before relying on the app for a trip:
 
 ## Submission note
 
-Functional changes: correct the native reference-camera preview orientation and proportions, preserve its full frame with letterboxing, prefer a sharp preview stream, combine light/EV capture with the readable Sony slate without asking for the same reading later, and automatically save/display nearby weather with capture time.
+Functional changes: automatically refresh GPS when opening an active camera slate, simplify the photograph area, collapse detailed explanations and keep measure/continue/skip controls visible without scrolling to the bottom.
 
-Technical changes: extract tested TextureView geometry and deterministic stream selection, observe display changes, disable supported implicit rotate-and-crop behavior, preserve measured lux while deriving a labelled EV estimate for display, print the stable QR payload as text, return manual readings to the slate, and add validated optional weather snapshots with rounded GPS, provenance, race guards, opt-out and ZIP preservation. Test bilingual/save/cancel/next-step/weather behavior. Publish matching 2.1.1 browser/Android assets with Android versionCode 5. Physical camera validation remains pending.
+Technical changes: share the initial/reopened slate GPS path, deduplicate in-flight requests, avoid refresh on internal light-entry returns, protect completed stops against late GPS/place callbacks, use a flex layout with a scrollable content region and persistent safe-area-aware footer, and publish synchronized browser/Android 2.1.2 builds. No record schema or QR payload changes. Browser regressions verify GPS lifecycle and visible, reachable controls on four screen sizes.
 
 Affected Markdown files: README.md and HANDOFF.md. No other Markdown files were changed.
