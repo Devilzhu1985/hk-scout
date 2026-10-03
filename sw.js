@@ -1,4 +1,4 @@
-const CACHE='scout-v2-955fe82733bef3d3';
+const CACHE='scout-v2-6f985a2b920960ce';
 const FILES=["./index.html","./app.js","./styles.css","./manifest.webmanifest","./icon-180.png","./icon-192.png","./icon-512.png"];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES))));
 // Activation is explicit, so an update cannot replace a running capture screen.

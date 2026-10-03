@@ -5,7 +5,7 @@ An offline field notebook for environment art and lighting reference. Use a phon
 ## Test on your phone
 
 - **Browser app:** [Open Scout](https://devilzhu1985.github.io/hk-scout/) in Chrome on Android or Safari on iPhone. Open once online, then add it to your home screen and test an offline reload.
-- **Android phone trial:** download `scout-2.1.3-preview.1-debug.apk` from the [Android test release](https://github.com/Devilzhu1985/hk-scout/releases/tag/v2.1.3-preview.1). This is the complete Scout app with its light meter built in, not a separate light-meter utility. This personal test build includes direct sensor access; browser mode generally uses manual light readings. Actual sensor availability and accuracy still need testing on your phone.
+- **Android phone trial:** download `scout-2.1.4-preview.1-debug.apk` from the [Android test release](https://github.com/Devilzhu1985/hk-scout/releases/tag/v2.1.4-preview.1). This is the complete Scout app with its light meter built in, not a separate light-meter utility. This personal test build includes direct sensor access; browser mode generally uses manual light readings. Actual sensor availability and accuracy still need testing on your phone.
 - If the old Hong Kong interface appears, export any existing records, close all tabs/windows of the app and reopen the link. Do not clear site data to update. Once on Scout 2, use **Update app** when offered.
 - Web and Android installations have separate local notebooks. Export a field ZIP and import it into the other installation to move records. The APK is a debug build, not an app-store release; export before uninstalling it.
 
@@ -84,7 +84,7 @@ See Android's [manual CCT controls](https://developer.android.com/reference/andr
 
 ### Updating the installed app
 
-In Scout 2.1.0 or newer, tap **Update Scout** to install 2.1.3. For an older build without that button, install the APK from the release link above. Install over your existing Scout; do not uninstall it. Later, the button checks public GitHub releases, downloads a newer compatible APK, verifies its SHA-256, package identity, increasing Android version code and signing certificate, then opens Android's installer. Android may ask you to allow installations from Scout and will ask you to approve the update. Opening the installer is not a claim that installation completed. Keep a field backup.
+In Scout 2.1.0 or newer, tap **Update Scout** to install 2.1.4. For an older build without that button, install the APK from the release link above. Install over your existing Scout; do not uninstall it. Later, the button checks public GitHub releases, downloads a newer compatible APK, verifies its SHA-256, package identity, increasing Android version code and signing certificate, then opens Android's installer. Android may ask you to allow installations from Scout and will ask you to approve the update. Opening the installer is not a claim that installation completed. Keep a field backup.
 
 Browser updates remain separate: new offline assets wait behind the **Update app** banner and save the open record before activating. The header update checker identifies the browser edition rather than attempting to install an APK there.
 
@@ -145,9 +145,23 @@ Original v1 `hkscout_v1` localStorage and `hkscout` photo database migrate on th
 
 No account, analytics SDK or automatic cloud/AI photo transfer is used. Automatic weather sends rounded fresh GPS to Open-Meteo and can be disabled; optional place-name lookups use the device address provider or BigDataCloud as described above; update checks contact GitHub. GPS, notes and image metadata remain sensitive when you choose to share a package. The external map link opens Google Maps; offline basemaps are not included. New web builds wait for explicit activation through **Update app**, after saving the open record.
 
+## Delete images, stops and trips
+
+- **Library:** delete an individual image, or select images and choose **Delete selected**. **Select shown** selects only the current search results; changing the search clears the selection. The stop's reference-image cards also have **Delete image**.
+- **Field:** **Delete stop** removes that capture and all its linked image and lighting records, including archived children.
+- **Trips & kit:** **Delete trip** removes the whole trip, stops, images, readings and camera-clock segments. Deleting the active trip selects another available trip; deleting the last one returns to the start screen.
+- **Trips & kit → Storage & cleanup:** see image bytes held in this notebook, delete archived records, or remove files that no record references. An archived stop can still own active images, so review the cascade counts.
+
+Every permanent deletion previews record counts, the affected items, image bytes to free and shared files that will be kept. A confirmation checkbox enables **Delete permanently**. **Back up first** opens Transfer for that trip; complete and verify the backup before reopening deletion. Cancelling makes no changes. If another tab, capture or GPS write changes the notebook while the preview is open, Scout requires a fresh review.
+
+Deletion frees Scout's stored original-image and preview bytes when no other record or unresolved conflict references them. It does **not** delete system Camera/DCIM copies, Sony files, previously saved ZIPs, staged native camera recovery files, or the original v1 localStorage/photo database. The size shown counts notebook image bytes, not total operating-system app storage or caches. Shared image bytes are kept. Archive remains reversible through Transfer and does not free image storage; permanent deletion has no in-app undo.
+
+Small tombstones keep names/filenames, IDs, revision ancestry and required capture timestamps so old packages cannot silently restore deleted records. Notes, GPS/weather, EXIF and image references are removed from permanently deleted records. A whole legacy-trip deletion also clears its migrated metadata archive; the independent v1 source remains. Cleanup applies to this browser profile or app installation only. A normal trip backup includes its deletion markers; **Transfer → Deleted trips → Export deletion record** lets you carry an entire trip's deletions to another device deliberately. The receiving device explicitly lists permanent deletions and requires acknowledgement before applying them. Its leftover image bytes remain available for a separate **Storage & cleanup → Clean unused files** confirmation. Shared or divergent edits remain conflicts; related unresolved conflicts must be resolved before cleanup. Importing new live records under a permanently deleted parent is rejected rather than hidden. To recover a permanently deleted shoot from an independent older backup, import it into a separate Scout notebook/profile.
+
 ## Development and validation
 
 - `npm test`: model, transactional storage, packages, clocks, solar dates and desktop importer integration.
+- `npm run test:cleanup`: isolated Chromium tests for single/bulk deletion, cancellation, shared-file retention, stale imports, cascade cleanup, last-trip reload, bilingual controls and mobile confirmation-button bounds.
 - `npm run test:browser`: Chromium workflow including mobile layout, controlled GPS, offline reload, lighting, image/color notes, catalogue review, handoff restore, repeated import and v1 migration. Starts its own local test server. Install a test browser with `npx playwright install chromium` if none is available.
 - `SCOUT_TEST_ENGINE=webkit npm run test:browser`: optional WebKit pass after installing its Playwright browser. Desktop engine tests do not replace iPhone testing.
 - Android: `./gradlew :app:testDebugUnitTest` from `android/` runs native preview geometry and size-selection regressions (use `gradlew.bat` on Windows).

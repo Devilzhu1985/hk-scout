@@ -43,7 +43,7 @@ try{
   await page.getByRole('button',{name:'Code photographed → continue',exact:true}).click();await expect(page.locator('#modal')).not.toBeVisible();
   await page.locator('#lighting-details summary').click();await expect(page.getByText('Live lux is unavailable in this browser',{exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'Measure light',exact:true})).toHaveCount(0);
-  await expect(page.getByRole('link',{name:'Download Scout for Android',exact:true})).toHaveAttribute('href',/scout-2\.1\.3-preview\.1-debug\.apk$/);
+  await expect(page.getByRole('link',{name:'Download Scout for Android',exact:true})).toHaveAttribute('href',/scout-2\.1\.4-preview\.1-debug\.apk$/);
   await expect(page.getByText(/complete Scout app/)).toBeVisible();
   await page.locator('#set-name').fill('Sham Shui Po · awning');
   await page.locator('#set-name').press('Tab');

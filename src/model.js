@@ -56,6 +56,7 @@ export function validateRecords(records) {
     assert(kinds.includes(r.kind) && text(r.revision,180) && r.revision && date(r.updatedAt), 'Invalid record revision.');
     assert(Array.isArray(r.ancestors) && r.ancestors.length <= 10000 && r.ancestors.every(x=>text(x,180)) && !r.ancestors.includes(r.revision), 'Invalid revision ancestry.');
     assert(typeof r.deleted === 'boolean' && text(r.device,180), 'Invalid device or deletion marker.');
+    if(r.purgedAt!==undefined)assert(r.deleted&&date(r.purgedAt)&&!r.blobId&&!(r.originals||[]).length,'Invalid permanent deletion marker.');
     if (r.kind === 'trip') assert(text(r.name,200) && text(r.city,200) && timezoneValid(r.timezone) && ['hongkong','blank'].includes(r.template), 'Invalid trip.');
     else assert(text(r.tripId,180) && r.tripId, 'Missing trip reference.');
     if (r.kind === 'set') {
@@ -87,6 +88,7 @@ export function validateReferences(records) {
   for (const r of records) {
     if (r.kind !== 'trip') assert(map.get(r.tripId)?.kind === 'trip', 'A record refers to a missing trip.');
     if (r.setId) assert(map.get(r.setId)?.kind === 'set' && map.get(r.setId).tripId === r.tripId, 'A record refers to a missing or different-trip photo set.');
+    if(!r.deleted)assert(!map.get(r.tripId)?.purgedAt&&!map.get(r.setId)?.purgedAt,'A live record belongs to a permanently deleted trip or stop. Recover that package in a separate notebook.');
   }
 }
 export function merge(state, incoming, packageId) {

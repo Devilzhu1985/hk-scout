@@ -1,4 +1,58 @@
 export const zh=Object.fromEntries(`
+Permanent deletions in this package	此导入包包含永久删除
+These records cannot be restored in this notebook. Leftover image files can be removed afterward in Storage & cleanup.	这些记录无法在当前记录本中恢复。余下的图片文件可随后在“存储与清理”中移除。
+Apply these deletions to this device.	在本设备执行这些删除。
+Review and confirm the deletions first.	请先核对并确认删除内容。
+Notebook changed. Cancel and reopen the import to review it again.	记录本已发生变化，请取消并重新打开导入包核对。
+
+Delete image	删除图片
+Delete images	删除图片
+Delete stop	删除拍摄点
+Delete trip	删除行程
+Delete permanently	永久删除
+Delete selected	删除所选
+Selected images	已选图片
+Select shown	选择当前显示的图片
+Clear selection	取消选择
+Select image	选择图片
+Sony files stay external. Scout copies can be deleted below.	索尼原文件保留在外部存储中。可在下方删除 Scout 中的副本。
+Storage & cleanup	存储与清理
+Scout image storage on this device	本设备 Scout 图片占用
+Unused files	未被引用的文件
+Archived records	已归档记录
+Clean unused files	清理未引用文件
+Delete archived records	删除已归档记录
+Delete individual images in Library, or delete a whole trip above. Archived stops may still have linked images; review the counts before deleting.	可在图库删除单张图片，或在上方删除整个行程。已归档的拍摄点可能仍有关联图片，删除前请核对数量。
+Only Scout’s notebook copies are removed. Camera album, Sony files, saved ZIP backups, staged camera recovery files and original v1 data remain separate.	只清理 Scout 记录本中的副本。系统相册、索尼文件、已导出的 ZIP 备份、待恢复相机文件及原版 v1 数据独立保留。
+Deleted trips · SCOUTSLOT0END	已删除行程 · SCOUTSLOT0END
+These are small deletion records, not recoverable trips. Export one only if you want to apply its deletions on another device; review the import there.	这里只保留少量删除标记，无法直接恢复行程。如需在另一设备执行这些删除，请导出标记并在该设备导入前核对。
+Export deletion record	导出删除标记
+Clean up Scout	清理 Scout
+Nothing to clean up.	没有需要清理的内容。
+Trips	行程
+Stops	拍摄点
+Images	图片
+Clock segments	相机时钟记录
+Trip	行程
+Stop	拍摄点
+Image	图片
+Clock segment	相机时钟记录
+Image storage to free	可释放的图片空间
+Stored files	存储文件
+Shared files kept	保留共享文件
+Removes selected records and their linked images and readings from Scout on this device. Stored originals and previews are permanently removed when no other record needs them.	从本设备 Scout 删除所选记录及其关联图片与测光数据。不再被其他记录引用的原文件和预览将永久移除。
+Camera album / DCIM, Sony originals and existing ZIP backups stay untouched. This cannot be undone in Scout. Export a backup first if you may need these records.	系统相册 / DCIM、索尼原文件及已有 ZIP 备份保持不变。在 Scout 中无法撤销删除。如需保留这些记录，请先导出备份。
+Review items & deletion details	查看删除项目与说明
+Small deletion records retain names, IDs and revision history to prevent old imports from restoring deleted items. This is local cleanup; other devices change only when you import a deletion package. Staged camera recovery files and original v1 data are separate.	少量删除标记保留名称、ID 和版本历史，防止旧导入包恢复已删除项目。清理仅影响本设备，其他设备须导入删除包才会改变。待恢复相机文件及原版 v1 数据独立保留。
+I understand this permanently removes Scout’s copies.	我了解这会永久移除 Scout 中的副本。
+Back up first	先备份
+Deleted from Scout. Camera album and external files are unchanged.	已从 Scout 删除。系统相册和外部文件保持不变。
+Resolve this selection’s conflicts in Transfer before deleting.	请先在“传输”中解决这些记录的版本冲突，再执行删除。
+Records changed. Review the cleanup again.	记录已发生变化，请重新核对清理内容。
+Restore the parent trip or stop first.	请先恢复所属行程或拍摄点。
+A live record belongs to a permanently deleted trip or stop. Recover that package in a separate notebook.	导入包含已永久删除的行程或拍摄点下的有效记录。请使用独立的记录本恢复此备份包。
+Invalid permanent deletion marker.	永久删除标记无效。
+
 Choose next stop	自选下一站
 Route details	路线说明
 Clear destination	取消目的地
@@ -421,7 +475,7 @@ Save sample in image notes	将取样保存到图片笔记
 Saved GPS with low accuracy. Add a landmark note.	已保存低精度 GPS，请补充地标说明。
 Saved on this device	已保存到本机
 Saving…	正在保存…
-Scout 2.1.3 · local files first · no analytics or automatic cloud/AI upload	Scout 2.1.3 · 本地文件优先 · 无统计跟踪或自动云端 / AI 上传
+Scout 2.1.4 · local files first · no analytics or automatic cloud/AI upload	Scout 2.1.4 · 本地文件优先 · 无统计跟踪或自动云端 / AI 上传
 Scout ZIP, desktop catalogue ZIP, or original v1 JSON backup.	Scout ZIP、电脑目录 ZIP 或原 v1 JSON 备份。
 Scout built-in light meter	Scout 内置测光
 Scout for Android	安卓 Scout
@@ -551,4 +605,4 @@ Update app · saves first, then reloads	更新网页 · 先保存再刷新
 FIELD NOTES	现场笔记
 Main navigation	主导航
 Opening your field notebook…	正在打开现场记录本…
-`.trim().split('\n').map(line=>line.split('\t')));
+`.trim().split('\n').filter(Boolean).map(line=>line.split('\t')));

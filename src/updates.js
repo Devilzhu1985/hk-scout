@@ -1,4 +1,4 @@
-export const APP_VERSION='2.1.3';
+export const APP_VERSION='2.1.4';
 export const RELEASES_URL='https://github.com/Devilzhu1985/hk-scout/releases';
 export function newerVersion(tag,current=APP_VERSION){
   const parse=s=>/^v?(\d+)\.(\d+)\.(\d+)(?:-preview\.(\d+))?$/.exec(s);

@@ -1,10 +1,24 @@
-# Scout 2.1.3 implementation handoff
+# Scout 2.1.4 implementation handoff
 
 Date: 2026-10-03. Repository: hk-scout. This is the local implementation handoff, distinct from the shoot-specific HANDOFF.md generated inside each export.
 
 ## Phone test publication
 
-The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.3-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.4-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+
+## Permanent notebook cleanup · 2.1.4
+
+User request: delete unwanted files, clean up storage, and remove entire trips. Implemented in both browser and Android UI, in English and Simplified Chinese. Library has individual deletion and visible-result bulk selection; search changes clear selection. Reference cards and Field stops expose deletion directly. Trips & kit exposes whole-trip deletion and a storage panel for old archives and orphan files. Confirmation shows the actual cascade, unique reclaimable blob bytes and shared attachments, with a required acknowledgement and fixed mobile footer. Back up first switches to Transfer without deleting. No real user records were deleted during development.
+
+Store.change remains the sole notebook write owner. src/cleanup.js computes scope including archived children, blocks related unresolved import conflicts, and checks the reviewed state.generation in the committing transaction. A new optional validated purgedAt field marks irreversible notebook deletion within schema 2; it must accompany deleted=true and cannot retain blobId/originals. Required identity/history fields remain, with notes, GPS, weather, camera evidence and other optional payload stripped. Whole legacy-trip cleanup removes its migrated state.legacy archive but leaves independent v1 sources. Parent references remain valid; active children under purged parents are rejected on import/save. This is local cleanup, not automatic cross-device deletion.
+
+Store attachment removal runs in the same IndexedDB transaction as tombstones/preferences, after any pending attachment writes, and rechecks ownership across every retained record (including archives) and incoming conflict. Revisions prevent stale packages reviving deleted images; import attaches only files still referenced after merge so ignored stale packages cannot refill storage. Object URLs for removed previews are revoked. Successful deletion drops pending export/import snapshots and color-sample state. Active-trip fallback and recorded next-destination references are cleared consistently. Async form and reading writes cannot refill a deleted stop. No media-store deletion API is invoked; DCIM/Camera, Sony originals, ZIP backups, staged native recovery files and v1 source data remain outside this scope.
+
+Archive/Restore remains available for older reversible workflows; purged records are excluded from Restore. Deleted trip markers have an explicit export action in Transfer so another device can review and apply them. A deletion ZIP contains no removed images. Import previews list newly applied permanent markers and require an explicit checkbox; a changed notebook invalidates that review. Receiving devices remove the records but leave orphan image bytes for a separate Storage & cleanup confirmation. Permanently deleted records cannot be recovered through local Restore; an independent old backup may be imported in a separate notebook/profile. Historical clients should update before sharing purge markers. No schema/database migration or original-image transformation was needed.
+
+Validation: 39 JS unit/integration cases, including seven cleanup tests for cascading deletion, shared/conflict ownership, rollback, stale imports, concurrent review invalidation, original manifests and parent invariants. Dedicated isolated Chromium cleanup flow checks cancel/confirm, filtered bulk selection, original-file deletion, trip cascade, orphan cleanup, deletion export, stale backup import and deletion of the last trip. Footer hit targets verified at 390×844, 360×640, 320×568 and 844×390; Chinese screenshot inspected. Full capture/transfer/offline browser and navigation regressions passed, as did 13 Android JVM tests and the Android debug build. Physical Android/iPhone deletion behavior remains unverified; no phone was connected. Tests use disposable notebooks only.
+
+Release: versionName 2.1.4 / versionCode 8; same app ID and signing certificate; web and bundled Android assets match. Markdown affected in this submission: README.md and HANDOFF.md.
 
 ## User-chosen destinations and public camera originals · 2.1.3
 
