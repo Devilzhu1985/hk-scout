@@ -21,6 +21,7 @@ let browser;
 try{
   browser=await engine.launch({headless:true,...(executablePath?{executablePath}:{})});
   const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,acceptDownloads:true,...(engine===chromium?{geolocation:{latitude:22.3193,longitude:114.1694,accuracy:12},permissions:['geolocation']}:{})});
+  await context.addInitScript(()=>Object.defineProperty(window,'AmbientLightSensor',{configurable:true,value:undefined}));
   const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
   await page.goto(origin);await page.getByRole('button',{name:'Start a trip',exact:true}).click();
@@ -32,6 +33,10 @@ try{
   await expect(page.locator('#qr')).toBeVisible();
   await page.screenshot({path:path.join(out,'mobile-slate.png'),fullPage:true});
   await page.getByRole('button',{name:'Continue recording',exact:true}).click();
+  await expect(page.getByText('Live lux is unavailable in this browser',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Measure light',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('link',{name:'Download Scout for Android',exact:true})).toHaveAttribute('href',/scout-2\.0\.1-preview\.1-debug\.apk$/);
+  await expect(page.getByText(/complete Scout app/)).toBeVisible();
   await page.locator('#set-name').fill('Sham Shui Po · awning');
   await page.locator('#set-name').press('Tab');
   await expect(page.locator('#saved')).toHaveText('Saved on this device');
@@ -117,7 +122,53 @@ try{
   await expect(third.getByRole('heading',{name:'Hong Kong · imported records',exact:true})).toBeVisible();
   await third.getByRole('button',{name:'Open',exact:true}).click();
   await expect(third.locator('#set-form [name=notes]')).toHaveValue(/Keep me/);
+  // Controlled sensor fixture: verifies in-app integration, never hardware accuracy.
+  const sensorContext=await browser.newContext({viewport:{width:390,height:844}});
+  await sensorContext.addInitScript(()=>{
+    localStorage.setItem('hkscout_v1',JSON.stringify({v:1,points:[{id:'sensor',t:Date.parse('2026-01-01T00:00:00Z'),place:'Sensor test fixture',notes:'Synthetic browser sensor',photos:[],lux:{}}]}));
+    window.sensorTestMode='reading';window.sensorTestActive=0;
+    window.AmbientLightSensor=class extends EventTarget{
+      start(){
+        this.running=true;window.sensorTestActive++;
+        if(window.sensorTestMode==='error'){
+          this.timer=setTimeout(()=>{const event=new Event('error');event.error=Error('Sensor permission denied in controlled test');this.dispatchEvent(event);},100);
+        }else if(window.sensorTestMode==='reading'){
+          this.timer=setInterval(()=>{this.illuminance=200;this.dispatchEvent(new Event('reading'));},50);
+        }
+      }
+      stop(){clearInterval(this.timer);clearTimeout(this.timer);if(this.running){this.running=false;window.sensorTestActive--;}}
+    };
+  });
+  const sensorPage=await sensorContext.newPage();sensorPage.on('pageerror',e=>errors.push(e.message));
+  await sensorPage.goto(origin);await sensorPage.getByRole('button',{name:'Open',exact:true}).click();
+  await expect(sensorPage.getByText('Browser light sensor · experimental',{exact:true})).toBeVisible();
+  await sensorPage.getByRole('button',{name:'Measure light',exact:true}).click();
+  await sensorPage.getByRole('button',{name:'Capture 4 seconds',exact:true}).click();
+  await expect(sensorPage.getByRole('heading',{name:'Save phone measurement',exact:true})).toBeVisible({timeout:10000});
+  await expect(sensorPage.locator('#reading-form [name=value]')).toHaveValue('200');
+  await sensorPage.locator('#reading-form [name=label]').fill('Controlled sensor fixture');
+  await sensorPage.locator('#reading-form [name=protocol]').fill('Synthetic events only');
+  await sensorPage.getByRole('button',{name:'Save reading',exact:true}).click();
+  await expect(sensorPage.locator('#modal')).not.toBeVisible();
+  await expect(sensorPage.getByText('200 lux',{exact:true})).toBeVisible();
+  await sensorPage.evaluate(()=>window.sensorTestMode='error');
+  await sensorPage.getByRole('button',{name:'Measure light',exact:true}).click();
+  await sensorPage.getByRole('button',{name:'Capture 4 seconds',exact:true}).click();
+  await expect(sensorPage.locator('#meter-status')).toContainText('No reading saved. Sensor permission denied');
+  await expect(sensorPage.locator('#meter-value')).toHaveText('—');
+  await sensorPage.getByRole('button',{name:'Manual reading',exact:true}).last().click();
+  await expect(sensorPage.getByRole('heading',{name:'Add lighting reading',exact:true})).toBeVisible();
+  await expect.poll(()=>sensorPage.evaluate(()=>window.sensorTestActive)).toBe(0);
+  await sensorPage.getByRole('button',{name:'Cancel',exact:true}).click();
+  await sensorPage.evaluate(()=>window.sensorTestMode='hold');
+  await sensorPage.getByRole('button',{name:'Measure light',exact:true}).click();
+  await sensorPage.getByRole('button',{name:'Capture 4 seconds',exact:true}).click();
+  await expect.poll(()=>sensorPage.evaluate(()=>window.sensorTestActive)).toBe(1);
+  await sensorPage.getByRole('button',{name:'Manual reading',exact:true}).last().click();
+  await expect.poll(()=>sensorPage.evaluate(()=>window.sensorTestActive)).toBe(0);
+  await sensorPage.getByRole('button',{name:'Cancel',exact:true}).click();
+  await expect(sensorPage.getByText('200 lux',{exact:true})).toHaveCount(1);
   if(errors.length)throw Error(errors.join('\n'));
-  console.log('PASS '+engine.name()+': mobile capture, GPS '+(engine===chromium?'mock':'N/A')+', lighting, image/color, offline reload, RAW catalogue review, ZIP restore/idempotency and legacy migration. No page errors.');
+  console.log('PASS '+engine.name()+': capture-to-handoff, offline reload, restored records, unsupported lighting UI, and controlled sensor capture/permission error/cancellation. No page errors.');
 }finally{await browser?.close();server.kill();}
 function assertNoOverflow(size){if(size.width>size.viewport+1)throw Error('Mobile horizontal overflow: '+JSON.stringify(size));}

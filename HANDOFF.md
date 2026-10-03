@@ -4,7 +4,15 @@ Date: 2026-10-03. Repository: hk-scout. This is the local implementation handoff
 
 ## Phone test publication
 
-The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.0.0-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.0.1-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+
+## Lighting availability correction · 2.0.1
+
+User feedback: the browser's Measure light action led to an error asking for the Android app, creating the impression of an external light-meter dependency. The full Android Scout application already contains the native meter.
+
+The Lighting panel now probes the actual runtime before offering live capture. Unsupported browsers show an explanation, an explicit download of the complete Scout Android edition and a transfer path for existing records. Android bridge/sensor failures have recovery messages without another install prompt. Permission/capture errors remain in the meter dialog, offer manual entry and never save a fabricated reading. Switching to manual entry stops an active capture.
+
+Fourteen automated data/importer/capability tests passed, alongside the Chromium capture-to-handoff workflow with browser-without-sensor coverage and controlled sensor success/error/cancellation. Native capability outcomes use injected test adapters; physical sensor testing remains pending. The updated Android debug build compiles successfully.
 
 ## Product decisions
 
@@ -23,7 +31,7 @@ The existing GitHub Pages site builds the repository root from `main`: https://d
 | src/model.js | Record validation, revision ancestry, tombstones, matching, v1 record conversion |
 | src/store.js | Atomic IndexedDB record/attachment transactions and device-local preferences |
 | src/packets.js | Portable ZIP validation, checksums, batching, CSV/contact sheet/AI handoff |
-| src/native.js | Capacitor sensor/GPS/share access and browser fallback |
+| src/native.js; src/light-capability.js | Sensor capability checks, Capacitor sensor/GPS/share access and browser fallback |
 | src/sun.js | Approximate sunrise/sunset using the capture location and time zone |
 | src/hk-template.js | Original Hong Kong places and itinerary |
 | scripts/catalogue.mjs | Read-only desktop original inventory, EXIF, hashes, previews, checkpoints and batches |

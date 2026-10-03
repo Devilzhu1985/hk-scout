@@ -3,21 +3,37 @@ import {Filesystem,Directory} from '@capacitor/filesystem';
 import {Share} from '@capacitor/share';
 import {Geolocation} from '@capacitor/geolocation';
 import {summarize} from './model.js';
+import {inspectLightCapability} from './light-capability.js';
 export const native=Capacitor.isNativePlatform();
 const LightMeter=registerPlugin('LightMeter');
-let stopCurrent=()=>{};
-export function stopMeter(){stopCurrent();stopCurrent=()=>{};}
+let stopCurrent=()=>{},meterEpoch=0;
+export function stopMeter(){meterEpoch++;stopCurrent();stopCurrent=()=>{};}
+export async function getLightCapability() {
+  return inspectLightCapability({
+    android:native && Capacitor.getPlatform()==='android',
+    native,bridge:Capacitor.isPluginAvailable('LightMeter'),
+    browserSensor:typeof globalThis.AmbientLightSensor==='function',
+    secure:globalThis.isSecureContext,
+    readInfo:()=>new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>reject(Error('Sensor check timed out')),4000);
+      LightMeter.info().then(resolve,reject).finally(()=>clearTimeout(timer));
+    })
+  });
+}
 export async function measureLight(onReading) {
   stopMeter();
-  if(native && Capacitor.getPlatform()==='android') {
-    const info=await LightMeter.info(); if(!info.available)throw Error('This phone does not expose a light sensor. Use a manual meter reading.');
+  const epoch=meterEpoch;
+  const capability=await getLightCapability();
+  if(epoch!==meterEpoch)throw Error('Measurement interrupted. Please capture again.');
+  if(!capability.available)throw Error(capability.title+'. '+capability.detail);
+  if(capability.mode==='android') {
+    const info=capability.info;
     let finished=false;
     stopCurrent=()=>{if(!finished)LightMeter.stop().catch(()=>{});};
     const listener=await LightMeter.addListener('reading',r=>onReading(r.lux));
-    try {const result=await LightMeter.capture();finished=true;return {...result,instrument:info.device+' / '+info.name,source:'Android TYPE_LIGHT'};}
-    finally{await listener.remove();stopCurrent=()=>{};}
+    try {if(epoch!==meterEpoch)throw Error('Measurement interrupted. Please capture again.');const result=await LightMeter.capture();finished=true;return {...result,instrument:info.device+' / '+info.name,source:'Android TYPE_LIGHT'};}
+    finally{await listener.remove();if(epoch===meterEpoch)stopCurrent=()=>{};}
   }
-  if(!('AmbientLightSensor' in globalThis))throw Error('Live lux needs the Scout Android app on a phone with a light sensor. This browser supports manual readings.');
   return new Promise((resolve,reject)=>{
     const values=[];let last=null,receivedAt=0,done=false;
     const sensor=new AmbientLightSensor({frequency:5});

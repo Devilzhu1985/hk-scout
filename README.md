@@ -5,9 +5,11 @@ An offline field notebook for environment art and lighting reference. Use a phon
 ## Test on your phone
 
 - **Browser app:** [Open Scout](https://devilzhu1985.github.io/hk-scout/) in Chrome on Android or Safari on iPhone. Open once online, then add it to your home screen and test an offline reload.
-- **Android light-sensor trial:** download `scout-2.0.0-preview.1-debug.apk` from the [Android test release](https://github.com/Devilzhu1985/hk-scout/releases/tag/v2.0.0-preview.1). This personal test build includes the native light-sensor bridge; browser mode generally uses manual light readings. Actual sensor availability and accuracy still need testing on your phone.
+- **Android light-sensor trial:** download `scout-2.0.1-preview.1-debug.apk` from the [Android test release](https://github.com/Devilzhu1985/hk-scout/releases/tag/v2.0.1-preview.1). This is the complete Scout app with its light meter built in, not a separate light-meter utility. This personal test build includes direct sensor access; browser mode generally uses manual light readings. Actual sensor availability and accuracy still need testing on your phone.
 - If the old Hong Kong interface appears, export any existing records, close all tabs/windows of the app and reopen the link. Do not clear site data to update. Once on Scout 2, use **Update app** when offered.
 - Web and Android installations have separate local notebooks. Export a field ZIP and import it into the other installation to move records. The APK is a debug build, not an app-store release; export before uninstalling it.
+
+The website and Android package are two editions of Scout. Adding the website to the home screen does not give it Android sensor access. The Lighting panel checks capabilities first: it offers live capture when available, otherwise explains the current limitation and keeps manual entry available. Browser camera brightness is not substituted for lux.
 
 ## Start locally
 
