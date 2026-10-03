@@ -18,9 +18,11 @@ if(engine===chromium&&!executablePath&&process.platform==='win32'){
   if(dirs.length)executablePath=path.join(cache,dirs.at(-1),'chrome-win64','chrome.exe');
 }
 let browser;
+const weatherFixture=()=>({latitude:22.3,longitude:114.2,timezone:'Asia/Hong_Kong',current_units:{time:'unixtime',temperature_2m:'°C',cloud_cover:'%',wind_speed_10m:'km/h',precipitation:'mm'},current:{time:Math.floor(Date.now()/900000)*900,interval:900,weather_code:3,temperature_2m:27,cloud_cover:85,wind_speed_10m:12,precipitation:0}});
 try{
   browser=await engine.launch({headless:true,...(executablePath?{executablePath}:{})});
   const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,acceptDownloads:true,...(engine===chromium?{geolocation:{latitude:22.3193,longitude:114.1694,accuracy:12},permissions:['geolocation']}:{})});
+  await context.route('https://api.open-meteo.com/**',route=>route.fulfill({json:weatherFixture()}));
   await context.addInitScript(()=>Object.defineProperty(window,'AmbientLightSensor',{configurable:true,value:undefined}));
   const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
@@ -31,11 +33,16 @@ try{
   await page.getByRole('button',{name:'Create trip',exact:true}).click();
   await page.getByRole('button',{name:'+ Capture here',exact:true}).click();
   await expect(page.locator('#qr')).toBeVisible();
+  await expect(page.locator('#slate-photo')).toContainText('Trip ID');
+  await expect(page.locator('#slate-photo')).toContainText('Stop ID');
+  await expect(page.locator('#slate-light')).toContainText('No light reading yet');
+  if(engine===chromium)await expect(page.locator('#slate-weather')).toContainText('Overcast');
+  await expect(page.getByRole('button',{name:'Measure EV + lux · 4 seconds',exact:true})).toHaveCount(0);
   await page.screenshot({path:path.join(out,'mobile-slate.png'),fullPage:true});
   await page.getByRole('button',{name:'Code photographed → continue',exact:true}).click();await expect(page.locator('#modal')).not.toBeVisible();
   await page.locator('#lighting-details summary').click();await expect(page.getByText('Live lux is unavailable in this browser',{exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'Measure light',exact:true})).toHaveCount(0);
-  await expect(page.getByRole('link',{name:'Download Scout for Android',exact:true})).toHaveAttribute('href',/scout-2\.1\.0-preview\.1-debug\.apk$/);
+  await expect(page.getByRole('link',{name:'Download Scout for Android',exact:true})).toHaveAttribute('href',/scout-2\.1\.1-preview\.1-debug\.apk$/);
   await expect(page.getByText(/complete Scout app/)).toBeVisible();
   await page.locator('#set-name').fill('Sham Shui Po · awning');
   await page.locator('#set-name').press('Tab');
@@ -169,6 +176,26 @@ try{
   await expect.poll(()=>sensorPage.evaluate(()=>window.sensorTestActive)).toBe(0);
   await sensorPage.getByRole('button',{name:'Cancel',exact:true}).click();
   await expect(sensorPage.getByText('200 lux',{exact:true})).toHaveCount(1);
+  // Slate measures in place, persists the source lux once, then skips duplicate lighting.
+  await sensorPage.evaluate(()=>window.sensorTestMode='reading');
+  await sensorPage.getByRole('button',{name:'Show camera slate',exact:true}).click();
+  await sensorPage.getByRole('button',{name:'Measure EV + lux · 4 seconds',exact:true}).click();
+  await expect(sensorPage.locator('#slate-status')).toContainText('Light saved.',{timeout:10000});
+  await expect(sensorPage.locator('#slate-light')).toContainText('Estimated EV100 from lux');
+  await expect(sensorPage.locator('#slate-light strong')).toHaveText('6.32');
+  await expect(sensorPage.locator('#slate-light')).toContainText('200 lux');
+  await expect.poll(()=>sensorPage.evaluate(()=>window.sensorTestActive)).toBe(0);
+  await sensorPage.screenshot({path:path.join(out,'slate-with-light.png'),fullPage:true});
+  assertNoOverflow(await sensorPage.locator('#slate-photo').evaluate(el=>({width:el.scrollWidth,viewport:el.clientWidth})));
+  await sensorPage.evaluate(()=>window.sensorTestMode='hold');
+  await sensorPage.getByRole('button',{name:'Measure EV + lux · 4 seconds',exact:true}).click();
+  await expect.poll(()=>sensorPage.evaluate(()=>window.sensorTestActive)).toBe(1);
+  await sensorPage.getByRole('button',{name:'Cancel measurement',exact:true}).click();
+  await expect.poll(()=>sensorPage.evaluate(()=>window.sensorTestActive)).toBe(0);
+  await expect(sensorPage.locator('#slate-light strong')).toHaveText('6.32');
+  await sensorPage.getByRole('button',{name:'Code photographed → continue',exact:true}).click();
+  await expect(sensorPage.locator('#modal')).not.toBeVisible();
+  await expect(sensorPage.getByText('200 lux',{exact:true})).toHaveCount(2);
   // New flow: no trip/city typing, automatic GPS, optional photos/light, explicit finish.
   const simpleContext=await browser.newContext({viewport:{width:390,height:844},locale:'en-GB',acceptDownloads:true});
   await simpleContext.addInitScript(()=>{
@@ -177,6 +204,7 @@ try{
   });
   const simple=await simpleContext.newPage();simple.on('pageerror',e=>errors.push(e.message));
   await simple.route('https://api.bigdatacloud.net/**',route=>route.fulfill({json:{locality:'Test district',city:'Test city'}}));
+  await simple.route('https://api.open-meteo.com/**',route=>route.fulfill({json:weatherFixture()}));
   await simple.route('https://api.github.com/repos/Devilzhu1985/hk-scout/releases*',route=>route.fulfill({json:[{tag_name:'v9.0.0-preview.1',prerelease:true,assets:[{name:'scout-9.0.0-debug.apk',browser_download_url:'https://github.com/Devilzhu1985/hk-scout/releases/download/v9.0.0-preview.1/scout-9.0.0-debug.apk',digest:'sha256:'+'a'.repeat(64),size:1000000}]}]}));
   await simple.goto(origin);await simple.getByRole('button',{name:'Capture here now',exact:true}).click();
   await simple.locator('#modal').getByRole('button',{name:'Phone only / skip code',exact:true}).click();await expect(simple.locator('#modal')).not.toBeVisible();
@@ -230,7 +258,57 @@ try{
   await simple.locator('#nav [data-action=nav][data-id=settings]').click();await expect(simple.getByRole('heading',{name:'行程与设备',exact:true})).toBeVisible();
   await simple.locator('#nav [data-action=nav][data-id=transfer]').click();await expect(simple.getByRole('heading',{name:'汇总所有拍摄资料。',exact:true})).toBeVisible();
 
+  // Unsupported devices can enter EV directly and return to the readable slate.
+  const slateContext=await browser.newContext({viewport:{width:390,height:844}});
+  let weatherRequests=0,weatherError=false;
+  await slateContext.route('https://api.open-meteo.com/**',route=>{weatherRequests++;const url=new URL(route.request().url());if(url.searchParams.get('latitude')!=='22.32'||url.searchParams.get('longitude')!=='114.17')throw Error('Weather coordinates were not rounded');return route.fulfill(weatherError?{status:503,body:'Unavailable'}:{json:weatherFixture()});});
+  await slateContext.addInitScript(()=>{Object.defineProperty(window,'AmbientLightSensor',{configurable:true,value:undefined});navigator.geolocation.getCurrentPosition=ok=>ok({timestamp:Date.now(),coords:{latitude:22.3193,longitude:114.1694,accuracy:12}});});
+  const slatePage=await slateContext.newPage();slatePage.on('pageerror',e=>errors.push(e.message));
+  await slatePage.goto(origin);await slatePage.getByRole('button',{name:'Capture here now',exact:true}).click();
+  await expect(slatePage.locator('#slate-weather')).toContainText('Overcast');
+  await expect(slatePage.locator('#slate-weather')).toContainText('27 °C');
+  await expect(slatePage.locator('#slate-weather')).toContainText('Open-Meteo');
+  await expect(slatePage.locator('#slate-zone')).toHaveText('Asia/Hong_Kong');
+  await expect(slatePage.locator('#slate-time')).not.toBeEmpty();
+  await slatePage.getByRole('button',{name:'Enter EV / lux',exact:true}).click();
+  await expect(slatePage.locator('#reading-form [name=method]')).toHaveValue('camera_ev');
+  await slatePage.locator('#reading-form [name=value]').fill('8.5');
+  await slatePage.locator('#reading-form [name=protocol]').fill('Sony ISO 100 meter, gray card target');
+  await slatePage.getByRole('button',{name:'Save reading',exact:true}).click();
+  await expect(slatePage.locator('#slate-light strong')).toHaveText('8.5');
+  await expect(slatePage.locator('#slate-light')).toContainText('Meter EV100 · entered');
+  await expect(slatePage.locator('#slate-light')).not.toContainText('Estimated');
+  await slatePage.getByRole('button',{name:'Code photographed → continue',exact:true}).click();
+  await expect(slatePage.locator('#modal')).not.toBeVisible();
+  await slatePage.getByRole('button',{name:'Sony only / skip phone photo',exact:true}).click();
+  await expect(slatePage.locator('#next-step h2')).toHaveText('4 · Finish this stop');
+  await slatePage.locator('#language').selectOption('zh');
+  await slatePage.getByRole('button',{name:'显示相机识别板',exact:true}).click();
+  await expect(slatePage.locator('#slate-light')).toContainText('测光表 EV100');
+  await expect(slatePage.locator('#slate-photo')).toContainText('行程 ID');
+  await expect(slatePage.locator('#slate-weather')).toContainText('阴天');
+  await slatePage.screenshot({path:path.join(out,'slate-chinese.png'),fullPage:true});
+  await slatePage.getByRole('button',{name:'识别码已拍摄 → 继续',exact:true}).click();
+  await expect(slatePage.locator('#modal')).not.toBeVisible();
+  await slatePage.locator('#language').selectOption('en');
+  await slatePage.getByRole('button',{name:'Finish stop',exact:true}).click();
+  await slatePage.locator('#nav [data-id=settings]').click();
+  await slatePage.locator('#online-weather').uncheck();
+  await slatePage.locator('#nav [data-id=field]').click();
+  await slatePage.getByRole('button',{name:'+ Capture here',exact:true}).click();
+  await expect(slatePage.locator('#slate-gps')).toContainText('22.31930');
+  await expect(slatePage.locator('#slate-weather')).toContainText('Automatic weather is off.');
+  if(weatherRequests!==1)throw Error('Disabled weather sent a request');
+  await slatePage.locator('#modal').getByRole('button',{name:'Phone only / skip code',exact:true}).click();
+  await expect(slatePage.locator('#modal')).not.toBeVisible();
+  await slatePage.getByRole('button',{name:'Finish stop now',exact:true}).click();
+  weatherError=true;
+  await slatePage.locator('#nav [data-id=settings]').click();await slatePage.locator('#online-weather').check();
+  await slatePage.locator('#nav [data-id=field]').click();await slatePage.getByRole('button',{name:'+ Capture here',exact:true}).click();
+  await expect(slatePage.locator('#slate-weather')).toContainText('Weather unavailable.');
+  await expect(slatePage.locator('#slate-weather')).not.toContainText('27 °C');
+
   if(errors.length)throw Error(errors.join('\n'));
-  console.log('PASS '+engine.name()+': capture-to-handoff, offline reload, restored records, unsupported lighting UI, and controlled sensor capture/permission error/cancellation. No page errors.');
+  console.log('PASS '+engine.name()+': capture-to-handoff, offline restore, bilingual slate EV/manual/sensor cancellation, automatic weather/time zone, opt-out and failure fallback. No page errors.');
 }finally{await browser?.close();server.kill();}
 function assertNoOverflow(size){if(size.width>size.viewport+1)throw Error('Mobile horizontal overflow: '+JSON.stringify(size));}

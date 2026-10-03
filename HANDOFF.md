@@ -1,10 +1,26 @@
-# Scout 2.1 implementation handoff
+# Scout 2.1.1 implementation handoff
 
 Date: 2026-10-03. Repository: hk-scout. This is the local implementation handoff, distinct from the shoot-specific HANDOFF.md generated inside each export.
 
 ## Phone test publication
 
-The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.0-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.1-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+
+## Camera preview correction and lighting slate · 2.1.1
+
+User reported a rotated, stretched or cropped native camera preview. The former transform reapplied SENSOR_ORIENTATION even though TextureView already applies it, then used the wrong axes for the aspect correction. CameraPreview now removes the implicit stretch, compensates only display rotation and fits the complete frame. The black viewfinder shows letterboxing instead of cropping. Display changes, including 180-degree changes without a resize, update the transform. Supported rotate-and-crop controls are set to NONE so compatibility mode does not add another crop. The activity still prefers portrait; this change does not add a landscape camera UI.
+
+Preview size selection first matches the still-image aspect ratio, then selects the largest stream within 1920 × 1080 bounds, independently of camera HAL order. Eight JVM tests cover exact upright portrait framing, expected letterbox coordinates, rotation direction, all sensor/display quarter-turns across five view shapes, resolution ordering and unusual-size/empty-list handling. Physical S25 Edge preview and capture framing must still be checked; no Android device was connected during development.
+
+Release: versionName 2.1.1 / versionCode 5, same app ID and signing identity. Browser and packaged web assets carry the same version. Schema version remains 2; no original-image processing changes. Existing 2.1.0 installations can request this release with Update Scout.
+
+Additional user decision in this release: light/EV capture belongs on the camera slate, and all QR identity fields must also be human-readable. The slate offers a four-second sensor sample saved directly as a normal phone_lux record with instrument, timestamp, sample statistics and an explicitly instructed/unverified placement protocol. Manual EV/lux entry returns to the slate after save or cancel. A saved reading already satisfies the later lighting step; additional zone readings remain available. Sensor failures/cancellation do not save a new reading. The latest active reading is limited to the current stop and printed with its source and timestamp; older-than-five-minute readings are flagged.
+
+src/slate.js keeps QR identity stable and computes a display-only EV100 estimate for positive lux using C=250. It never changes lux into a camera_ev record or equates it with reflected-light metering. Zero lux has no finite EV; negative/zero entered EV remain valid. The QR still contains only app=scout, v=2, tripId, setId and code, all printed on the slate. GPS/place and live clock also appear, and delayed GPS updates reach an open slate. No automatic QR decoder was added.
+
+Additional user decision: fetch weather automatically rather than requiring typed conditions/time. The user explicitly approved new-stop GPS rounded to two decimals being sent to Open-Meteo. src/weather.js validates current model data and units, preserves provider/retrieval/fix timestamps, grid/request coordinates, time zone and precipitation interval, and applies it only to the unchanged fresh GPS of a recent open stop without an existing snapshot. set.weather and set.autoTimezone are optional in schema 2 and validated on import; writes use the same Store transaction owner as other set changes. New stops enable autoTimezone and adopt the provider's GPS-derived zone with the first weather snapshot; manual coordinate/time-zone edits disable it. Older stops lack the flag and keep their chosen zones. No migration or fabricated historic weather. Device-local onlineWeather defaults on and can disable future requests. Weather estimates remain distinct from notes and measured lighting. Device UTC capture instants were already automatic; online weather timestamps do not overwrite them.
+
+Verification for the combined release: 27 web unit/integration tests, eight native geometry tests, Chromium capture/export/restore flow plus slate sensor save/cancel, manual EV return, bilingual slate, bypass of the already-completed lighting step, weather rounding/display, disabling and HTTP-failure fallback. A live Open-Meteo request with public Hong Kong fixture coordinates confirmed the expected units/timestamp contract. Android build and physical preview verification have separate meanings: no phone was connected for a camera test.
 
 ## Guided capture, bilingual camera and updates · 2.1.0
 
@@ -101,8 +117,8 @@ Required physical trial before relying on the app for a trip:
 
 ## Submission note
 
-Functional changes: guided field capture with automatic GPS, approximate place names, optional steps and explicit finish/next-stop; English/Chinese UI and Hong Kong itinerary; phone camera capture and original retention; Android RAW/manual-WB capability controls, staged-capture recovery and in-app update initiation.
+Functional changes: correct the native reference-camera preview orientation and proportions, preserve its full frame with letterboxing, prefer a sharp preview stream, combine light/EV capture with the readable Sony slate without asking for the same reading later, and automatically save/display nearby weather with capture time.
 
-Technical changes: literal-only localization and locale dates, edited-field autosave protection, original manifests and checked ZIP transport, Camera2/DngCreator capture, native Geocoder and guarded APK downloader/installer, compatibility checks and browser/integrity regression coverage. Generated static/offline and Capacitor assets are rebuilt for the same release.
+Technical changes: extract tested TextureView geometry and deterministic stream selection, observe display changes, disable supported implicit rotate-and-crop behavior, preserve measured lux while deriving a labelled EV estimate for display, print the stable QR payload as text, return manual readings to the slate, and add validated optional weather snapshots with rounded GPS, provenance, race guards, opt-out and ZIP preservation. Test bilingual/save/cancel/next-step/weather behavior. Publish matching 2.1.1 browser/Android assets with Android versionCode 5. Physical camera validation remains pending.
 
 Affected Markdown files: README.md and HANDOFF.md. No other Markdown files were changed.

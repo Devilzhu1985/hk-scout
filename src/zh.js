@@ -1,4 +1,55 @@
 export const zh=Object.fromEntries(`
+Weather · online estimate	天气 · 在线估计
+Device clock	设备时钟
+Cloud	云量
+Wind	风速
+Precipitation	降水
+Clear sky	晴朗
+Mainly clear	大致晴朗
+Partly cloudy	局部多云
+Overcast	阴天
+Fog	雾
+Drizzle	毛毛雨
+Freezing rain / drizzle	冻雨 / 冻毛毛雨
+Rain	下雨
+Snow	下雪
+Rain showers	阵雨
+Snow showers	阵雪
+Thunderstorm	雷暴
+Weather condition unavailable	暂无天气状况
+Saved near capture time. Nearby model conditions may differ from this street or indoor scene. Add observed differences in notes.	已保存拍摄时段附近的天气。区域模型估计可能与街道或室内实际状况不同，可在笔记中补充现场差异。
+Getting weather for this location…	正在获取此地点的天气…
+Automatic weather is off.	自动天气已关闭。
+Weather waits for a fresh GPS fix and internet.	获取天气需要当前 GPS 定位和网络。
+Retry GPS & weather	重试定位与天气
+Weather unavailable offline. Keep shooting.	离线时无法获取天气，可继续拍摄。
+Weather unavailable. Keep shooting or retry GPS & weather.	暂时无法获取天气，可继续拍摄或重试定位与天气。
+Capture time is saved automatically from this device. Keep automatic date and time enabled on your phone.	拍摄时间已通过设备时钟自动记录，请开启手机的自动日期与时间。
+Automatic weather & time	自动天气与时间
+Get weather automatically for new stops	为新地点自动获取天气
+Sends GPS rounded to two decimals to Open-Meteo. Saves nearby weather estimates with source and time; notes remain your on-site observations.	向 Open-Meteo 发送保留两位小数的 GPS 坐标，保存附近天气估计及其来源和时间；笔记保留您的现场观察。
+Capture time comes from the device clock automatically. New stops use the online location time zone when available, unless you edit it. Weather has its own timestamp; it never resets your phone clock or changes old capture times.	拍摄时间自动取自设备时钟。新地点会使用在线查询的当地时区，手动修改的时区则予以保留。天气拥有独立的数据时间，不会重设手机时钟或改动历史拍摄时间。
+No light reading yet	尚无光照读数
+Measure or enter EV before photographing this slate, or continue without it.	拍摄此标识板前测量或输入 EV，也可以暂时跳过。
+Estimated EV100 from lux	由照度估算的 EV100
+Meter EV100 · entered	测光表 EV100 · 手动输入
+Older reading — remeasure if the light changed.	较早的读数 — 光线变化后请重新测量。
+Scout · QR format v2	Scout · 二维码格式 v2
+Trip ID	行程 ID
+Stop ID	地点 ID
+Hold the screen facing up here, keep the sensor clear and avoid your shadow. Measure first, then turn the saved slate toward the Sony.	在此处将屏幕朝上，保持传感器无遮挡并避开自己的阴影。先测量，再将保存读数的标识板朝向索尼相机。
+This device has no live light sensor. Enter a meter EV100 or lux reading, or continue without one.	此设备没有可用的实时光照传感器。可输入测光表的 EV100 或照度读数，也可以跳过。
+Measure EV + lux · 4 seconds	测量 EV 与照度 · 4 秒
+Enter EV / lux	输入 EV / 照度
+Cancel measurement	取消测量
+The QR contains Scout format version, trip ID, stop ID and the large stop code printed above. It identifies this stop; it does not upload anything. Matching currently uses the readable code and timestamps, not automatic QR scanning.	二维码包含 Scout 格式版本、行程 ID、地点 ID 及上方的大号地点代码。它用于识别此地点，不会上传资料。目前通过可读代码与时间戳匹配，尚未自动扫描二维码。
+Lux-derived EV100 is an uncalibrated incident-light estimate (C=250), not the Sony reflected-light meter or exposure compensation.	由照度换算的 EV100 是未经校准的入射光估值（C=250），不同于索尼反射式测光读数或曝光补偿。
+Measuring… keep still. The reading saves when the sample finishes.	正在测量…请保持稳定，采样结束后自动保存读数。
+Measuring…	正在测量…
+Slate position	标识板位置
+Light saved. Photograph the code and reading together, then continue.	光照已保存。将代码和读数一起拍下，然后继续。
+No new reading saved. 	未保存新读数。
+Instructed: screen facing upward, sensor clear at stop; placement and height unverified	操作要求：在此地点屏幕朝上，传感器无遮挡；实际放置方式与高度未经核实
 Camera recovery	相机照片恢复
 Save these original files separately. Restore an archived stop before retrying its import.	请单独保存这些原文件。如果所属地点已归档，请先恢复该地点再重试导入。
 Save staged originals	保存待恢复原文件
@@ -319,7 +370,7 @@ Save sample in image notes	将取样保存到图片笔记
 Saved GPS with low accuracy. Add a landmark note.	已保存低精度 GPS，请补充地标说明。
 Saved on this device	已保存到本机
 Saving…	正在保存…
-Scout 2.1.0 · local files first · no analytics or automatic cloud/AI upload	Scout 2.1.0 · 本地文件优先 · 无统计跟踪或自动云端 / AI 上传
+Scout 2.1.1 · local files first · no analytics or automatic cloud/AI upload	Scout 2.1.1 · 本地文件优先 · 无统计跟踪或自动云端 / AI 上传
 Scout ZIP, desktop catalogue ZIP, or original v1 JSON backup.	Scout ZIP、电脑目录 ZIP 或原 v1 JSON 备份。
 Scout built-in light meter	Scout 内置测光
 Scout for Android	安卓 Scout

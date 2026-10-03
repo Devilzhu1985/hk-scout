@@ -5,6 +5,7 @@ import android.content.*;
 import android.graphics.*;
 import android.hardware.camera2.*;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.hardware.display.DisplayManager;
 import android.media.*;
 import android.os.*;
 import android.util.*;
@@ -45,6 +46,11 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
     private long jpegTimestamp;
     private String captureId;
     private int orientation;
+    private final DisplayManager.DisplayListener displayListener=new DisplayManager.DisplayListener(){
+        public void onDisplayAdded(int id){}
+        public void onDisplayRemoved(int id){}
+        public void onDisplayChanged(int id){if(texture!=null&&texture.getDisplay()!=null&&texture.getDisplay().getDisplayId()==id)transform();}
+    };
     private final Runnable timeout=()->fail("Camera capture timed out. Please try again.","拍摄超时，请重试。");
 
     private String tr(String en,String zh){return chinese?zh:en;}
@@ -55,7 +61,8 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
         // Insets keep controls clear of Android 15/16 edge-to-edge system bars.
         layout.setOnApplyWindowInsetsListener((v,insets)->{v.setPadding(18,insets.getSystemWindowInsetTop()+12,18,insets.getSystemWindowInsetBottom()+12);return insets;});
         TextView title=new TextView(this);title.setText(tr("Scout reference camera","Scout 参考相机"));title.setTextSize(23);layout.addView(title);
-        texture=new TextureView(this);texture.setSurfaceTextureListener(this);layout.addView(texture,new LinearLayout.LayoutParams(-1,0,1));
+        FrameLayout viewfinder=new FrameLayout(this);viewfinder.setBackgroundColor(Color.BLACK);
+        texture=new TextureView(this);texture.setOpaque(false);texture.setSurfaceTextureListener(this);viewfinder.addView(texture,new FrameLayout.LayoutParams(-1,-1));layout.addView(viewfinder,new LinearLayout.LayoutParams(-1,0,1));
         ScrollView scroll=new ScrollView(this);LinearLayout controls=new LinearLayout(this);controls.setOrientation(1);scroll.addView(controls);layout.addView(scroll,new LinearLayout.LayoutParams(-1,(int)(260*getResources().getDisplayMetrics().density)));
         status=new TextView(this);status.setText(tr("Checking camera…","正在检查相机…"));controls.addView(status);
         rawToggle=new CheckBox(this);rawToggle.setText("RAW DNG + JPEG");rawToggle.setEnabled(false);controls.addView(rawToggle);
@@ -66,6 +73,8 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
         Button cancel=new Button(this);cancel.setText(tr("Cancel","取消"));controls.addView(cancel);cancel.setOnClickListener(v->finish());setContentView(layout);
         thread=new HandlerThread("ScoutCamera");thread.start();worker=new Handler(thread.getLooper());
     }
+    @Override public void onAttachedToWindow(){super.onAttachedToWindow();((DisplayManager)getSystemService(DISPLAY_SERVICE)).registerDisplayListener(displayListener,new Handler(Looper.getMainLooper()));}
+    @Override public void onDetachedFromWindow(){((DisplayManager)getSystemService(DISPLAY_SERVICE)).unregisterDisplayListener(displayListener);super.onDetachedFromWindow();}
     private static boolean contains(int[] values,int target){if(values!=null)for(int v:values)if(v==target)return true;return false;}
     private static Size largest(Size[] sizes,long maxPixels){if(sizes==null)return null;return Arrays.stream(sizes).filter(s->(long)s.getWidth()*s.getHeight()<=maxPixels).max(Comparator.comparingLong(s->(long)s.getWidth()*s.getHeight())).orElse(null);}
     @Override public void onSurfaceTextureAvailable(SurfaceTexture surface,int w,int h){worker.post(this::openCamera);}
@@ -88,7 +97,9 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
         jpegSize=largest(map.getOutputSizes(ImageFormat.JPEG),24000000);
         rawSize=contains(characteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES),CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_RAW)?largest(map.getOutputSizes(ImageFormat.RAW_SENSOR),24000000):null;
         Size[] previewSizes=map.getOutputSizes(SurfaceTexture.class);
-        previewSize=Arrays.stream(previewSizes).filter(s->s.getWidth()<=1920&&s.getHeight()<=1080).min(Comparator.comparingDouble(s->Math.abs((double)s.getWidth()/s.getHeight()-(double)jpegSize.getWidth()/jpegSize.getHeight()))).orElse(previewSizes[0]);
+        if(previewSizes==null||previewSizes.length==0)throw new Exception("No preview stream available");
+        int[][] dimensions=Arrays.stream(previewSizes).map(s->new int[]{s.getWidth(),s.getHeight()}).toArray(int[][]::new);
+        previewSize=previewSizes[CameraPreview.chooseSize(dimensions,jpegSize.getWidth(),jpegSize.getHeight())];
         orientation=Optional.ofNullable(characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)).orElse(90);
         if(Build.VERSION.SDK_INT>=36){
             kelvinRange=characteristics.get(CameraCharacteristics.COLOR_CORRECTION_COLOR_TEMPERATURE_RANGE);
@@ -117,13 +128,11 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
         status.setText(tr("JPEG is processed. RAW keeps sensor data; WB remains editable. ","JPEG 已经过处理；RAW 保留传感器数据，白平衡可后期调整。 ")+(cctAvailable?tr("Manual K range: ","手动 K 范围：")+kelvinRange:tr("This camera does not expose manual Kelvin. Use a supported WB preset, or the phone camera’s Pro mode and import its files.","此相机未开放手动 K。可选白平衡预设，或在系统相机专业模式拍摄后导入。")));
         transform();
     }
-    private void transform(){if(previewSize==null||texture.getWidth()==0)return;
-        // Keep the sensor aspect ratio and rotation instead of stretching preview.
-        float w=texture.getWidth(),h=texture.getHeight();Matrix matrix=new Matrix();
-        matrix.setScale(previewSize.getWidth()/w,previewSize.getHeight()/h);
-        matrix.postRotate(orientation);RectF bounds=new RectF(0,0,w,h);matrix.mapRect(bounds);
-        float scale=Math.min(w/bounds.width(),h/bounds.height());matrix.postScale(scale,scale);
-        matrix.postTranslate(w/2-bounds.centerX()*scale,h/2-bounds.centerY()*scale);
+    private void transform(){if(previewSize==null||texture.getWidth()==0||texture.getHeight()==0)return;
+        // TextureView already rotates the sensor buffer. Rotating it again turns
+        // the scene sideways and uses the wrong axes to undo its default stretch.
+        int displayDegrees=texture.getDisplay()==null?0:texture.getDisplay().getRotation()*90;
+        Matrix matrix=new Matrix();matrix.setValues(CameraPreview.transform(texture.getWidth(),texture.getHeight(),previewSize.getWidth(),previewSize.getHeight(),orientation,displayDegrees));
         texture.setTransform(matrix);
     }
     private void createSession(){try{
@@ -139,6 +148,9 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
         if(requestedWb==-1&&cctAvailable&&Build.VERSION.SDK_INT>=36){builder.set(CaptureRequest.COLOR_CORRECTION_MODE,CaptureRequest.COLOR_CORRECTION_MODE_CCT);builder.set(CaptureRequest.COLOR_CORRECTION_COLOR_TEMPERATURE,requestedKelvin);builder.set(CaptureRequest.COLOR_CORRECTION_COLOR_TINT,0);}
         builder.set(CaptureRequest.CONTROL_EFFECT_MODE,CaptureRequest.CONTROL_EFFECT_MODE_OFF);
         builder.set(CaptureRequest.FLASH_MODE,CaptureRequest.FLASH_MODE_OFF);
+        // We fit the whole preview ourselves; do not let compatibility mode also
+        // rotate/crop it on displays that override the portrait orientation request.
+        if(Build.VERSION.SDK_INT>=31&&contains(characteristics.get(CameraCharacteristics.SCALER_AVAILABLE_ROTATE_AND_CROP_MODES),CaptureRequest.SCALER_ROTATE_AND_CROP_NONE))builder.set(CaptureRequest.SCALER_ROTATE_AND_CROP,CaptureRequest.SCALER_ROTATE_AND_CROP_NONE);
     }
     private void preview(){try{if(closing||session==null)return;CaptureRequest.Builder b=camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);b.addTarget(previewSurface);configure(b);session.setRepeatingRequest(b.build(),null,worker);}catch(Exception e){fail(e.getMessage(),"预览失败："+e.getMessage());}}
     private boolean readWhiteBalance(){try{

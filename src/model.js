@@ -1,3 +1,4 @@
+import {validWeather} from './weather.js';
 export const VERSION = 2;
 export const uid = () => crypto.randomUUID();
 export const now = () => new Date().toISOString();
@@ -61,6 +62,8 @@ export function validateRecords(records) {
       assert(text(r.code,100) && text(r.name,300) && date(r.startedAt) && (!r.endedAt || date(r.endedAt) && Date.parse(r.endedAt)>=Date.parse(r.startedAt)), 'Invalid photo-set interval.');
       assert(timezoneValid(r.timezone) && text(r.notes ?? '') && r.camera && text(r.camera.name,200), 'Invalid photo set.');
       if (r.location) assert(Number.isFinite(r.location.lat) && Math.abs(r.location.lat)<=90 && Number.isFinite(r.location.lng) && Math.abs(r.location.lng)<=180 && (r.location.accuracy == null || Number.isFinite(r.location.accuracy) && r.location.accuracy >= 0), 'Invalid coordinates.');
+      if(r.weather!=null)assert(validWeather(r.weather),'Invalid weather snapshot.');
+      if(r.autoTimezone!==undefined)assert(typeof r.autoTimezone==='boolean','Invalid automatic time zone preference.');
     }
     if (r.kind === 'reading') {
       assert(methods.includes(r.method) && Number.isFinite(r.value) && (r.method.endsWith('lux') ? r.value>=0 : true), 'Invalid lighting reading.');

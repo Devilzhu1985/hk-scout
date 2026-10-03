@@ -5,7 +5,7 @@ An offline field notebook for environment art and lighting reference. Use a phon
 ## Test on your phone
 
 - **Browser app:** [Open Scout](https://devilzhu1985.github.io/hk-scout/) in Chrome on Android or Safari on iPhone. Open once online, then add it to your home screen and test an offline reload.
-- **Android phone trial:** download `scout-2.1.0-preview.1-debug.apk` from the [Android test release](https://github.com/Devilzhu1985/hk-scout/releases/tag/v2.1.0-preview.1). This is the complete Scout app with its light meter built in, not a separate light-meter utility. This personal test build includes direct sensor access; browser mode generally uses manual light readings. Actual sensor availability and accuracy still need testing on your phone.
+- **Android phone trial:** download `scout-2.1.1-preview.1-debug.apk` from the [Android test release](https://github.com/Devilzhu1985/hk-scout/releases/tag/v2.1.1-preview.1). This is the complete Scout app with its light meter built in, not a separate light-meter utility. This personal test build includes direct sensor access; browser mode generally uses manual light readings. Actual sensor availability and accuracy still need testing on your phone.
 - If the old Hong Kong interface appears, export any existing records, close all tabs/windows of the app and reopen the link. Do not clear site data to update. Once on Scout 2, use **Update app** when offered.
 - Web and Android installations have separate local notebooks. Export a field ZIP and import it into the other installation to move records. The APK is a debug build, not an app-store release; export before uninstalling it.
 
@@ -27,16 +27,28 @@ For phone browsers, use HTTPS and open the app once online before relying on off
 
 ## The shooting workflow
 
-1. **Capture here now.** First use can create a dated trip without typing a city or name. Or choose **Plan a trip** for an itinerary and time zone. Every new stop requests a fresh GPS fix in the background. Coordinates, accuracy and fix time are saved automatically; permission failure never blocks shooting.
-2. **Photograph the Sony code.** Photograph the slate with your A7CR, then tap **Code photographed → continue**. Choose **Phone only / skip code** when appropriate. This is your confirmation, not automatic QR recognition.
+1. **Capture here now.** First use can create a dated trip without typing a city or name. Or choose **Plan a trip** for an itinerary and time zone. Every new stop requests a fresh GPS fix in the background. Coordinates, accuracy, capture time and fix time save automatically; online weather is fetched for the new location. Permission/network failure never blocks shooting.
+2. **Measure light on the Sony slate, then photograph it.** On supported devices, tap **Measure EV + lux · 4 seconds**. Hold the screen facing up at the stop with the sensor clear, then turn the saved slate toward the Sony. Or use **Enter EV / lux** for a separate meter reading. The slate shows the saved reading, source and time together with the code, current clock, GPS and readable trip/stop IDs. Photograph it with your A7CR, then tap **Code photographed → continue**. Choose **Phone only / skip code** when appropriate. This is your confirmation, not automatic QR recognition.
 3. **Take a phone reference.** Use **Take reference photo**, choose an existing image, or skip the phone image when shooting only with Sony. Original phone files are retained separately from rendered previews.
-4. **Record lighting if needed.** Measure with an exposed Android light sensor or enter a reading with its instrument and orientation. Quick visual references can **Skip lighting**. The lens cover remains an uncalibrated target; preview color samples are rendered sRGB, not measured CCT or albedo.
+4. **Record more lighting only if needed.** A reading saved from the slate already satisfies this step. Add different zones under Lighting details & readings; if none exists, the guided flow still offers a reading or **Skip lighting**. The lens cover remains an uncalibrated target; preview color samples are rendered sRGB, not measured CCT or albedo.
 5. **Finish stop.** This explicit final step saves the end time for later Sony timestamp matching. Then choose **Start next stop** or **Back up this trip**. **Finish stop now** also lets you end early. Notes and associations remain editable. Beginning another stop while one is open asks before finishing it.
 6. **Back up before clearing anything.** Save every exported ZIP part and verify an independent second copy. Packages now include phone originals when available; older records may have previews only. Sony originals remain in your camera/desktop archive.
 7. **Copy Sony originals and run the desktop importer.** Import its catalogue ZIPs, add camera clock correction segments in **Library**, inspect the slate and confirm proposed associations. A camera 90 seconds slow needs +90 seconds. Camera time is never rewritten.
 8. **Prepare the assistant handoff.** Export the trip's handoff ZIP parts and supply those with your organization priorities. Exports do not automatically upload to an AI service.
 
 The header switches between **English** and **中文 (Simplified Chinese)**. This preference belongs to the device. UI labels, dates and the optional Hong Kong itinerary switch; your names, notes, filenames, canonical roles and original metadata are preserved.
+
+The slate QR contains only `{app: "scout", v: 2, tripId, setId, code}`. Its identity fields are also printed as text; it does not contain a URL, upload data, or replace the displayed lighting/GPS details. Automatic QR recognition is not implemented. The large stop code supports manual matching; photographing the live clock helps review Sony clock offsets.
+
+Phone measurements retain their original lux and provenance. The slate displays **estimated EV100 from lux** using the flat incident-meter convention `log2(lux / 2.5)` (C=250, ISO 100; see [Sekonic's EV/lux table](https://sekonic.com/content/Files/manual/L-358/L-358_operating_manual_en.pdf)). This is an uncalibrated estimate, not the Sony reflected-light meter, exposure compensation, or a calibrated meter substitute. Zero lux has no finite EV estimate. Entered meter EV100 stays separate. Readings are frozen after capture and labelled with their actual saved time; reopening a slate selects the latest active reading of that stop and flags readings older than five minutes. Remeasure whenever the light or position changes.
+
+### Automatic weather and time
+
+New stops automatically request [Open-Meteo current conditions](https://open-meteo.com/en/docs) using a fresh GPS fix rounded to two decimals. The user approved this approximate-location transfer. No notes, images or record IDs are sent. **Trips & kit → Automatic weather & time** can turn off future lookups. There is no IP-based location fallback or lookup of imported/history coordinates.
+
+The saved snapshot includes conditions, temperature, cloud cover, wind, precipitation and its interval, provider time, retrieval time, GPS-fix time, requested/grid coordinates and the provider's location time zone. These are nearby **weather-model estimates**, not measurements at the exact street or inside a building. The slate and record show the estimate and source; observed differences belong in notes. Snapshots survive ZIP transfer and are not replaced on reopening or by a later GPS fix. Failed/offline lookups leave weather unavailable with a retry option; historical/finished stops are not filled using today's weather.
+
+Capture and slate time already use the device clock automatically. Leave the phone's automatic date/time enabled. New stops adopt the weather provider's GPS-derived local time zone once available. Editing coordinates/time zone manually disables that automatic change for the stop. Older stops keep their existing time zones. Online weather has its own provider timestamp; Scout does not treat it as the current second, reset the phone clock, or rewrite UTC capture instants. Offline captures retain the initial trip/device display zone until a valid weather lookup succeeds.
 
 ### Automatic location names
 
@@ -45,6 +57,8 @@ GPS alone supplies coordinates, not a reliable venue name. Scout starts with a c
 Browser area names are optional: **Enable online area names** explains that it sends the device's current GPS to BigDataCloud. The setting can be disabled under **Trips & kit → Location names**. Requests originate on the device, use only a fresh fix obtained there, and never query imported/manual/history coordinates or fall back to IP. See the [provider's client-side policy](https://www.bigdatacloud.com/docs/article/fair-use-policy-for-free-client-side-reverse-geocoding-api). It returns city/area names, not exact shops. Coordinates still save offline; lookup failures never fabricate a location.
 
 ### Phone camera and original files
+
+Version 2.1.1 fixes the native preview being rotated a second time and distorted. It fits the complete preview frame with black margins when needed and selects a sharp stream matching the still image aspect ratio. This follows Android’s [TextureView orientation contract](https://developer.android.com/media/camera/camera2/camera-preview#textureview). The camera screen still prefers portrait orientation; geometry tests do not replace checking the actual phone.
 
 - **Android Scout:** includes its own Camera2 reference camera; no separate camera utility is required. A rear camera supporting RAW can save DNG plus a processed JPEG companion. Supported white-balance presets are listed. A manual Kelvin input appears only when Android 16 / API 36 **and the camera hardware** expose the CCT mode, range, request and result keys. Requested and reported settings are recorded separately. A Kelvin setting is not a measurement of scene color temperature.
 - **Android/iPhone browsers:** **Open phone camera** requests rear-camera capture. The browser/OS may show a chooser. Browsers cannot force the manufacturer's Pro mode, RAW or manual Kelvin. To use those OEM controls, select Pro/RAW in the phone's camera and import the saved files afterward.
@@ -56,7 +70,7 @@ See Android's [manual CCT controls](https://developer.android.com/reference/andr
 
 ### Updating the installed app
 
-Install 2.1.0 once from the release link above to obtain the **Update Scout** button. Install over your existing Scout; do not uninstall it. Later, the button checks public GitHub releases, downloads a newer compatible APK, verifies its SHA-256, package identity, increasing Android version code and signing certificate, then opens Android's installer. Android may ask you to allow installations from Scout and will ask you to approve the update. Opening the installer is not a claim that installation completed. Keep a field backup.
+In Scout 2.1.0 or newer, tap **Update Scout** to install 2.1.1. For an older build without that button, install the APK from the release link above. Install over your existing Scout; do not uninstall it. Later, the button checks public GitHub releases, downloads a newer compatible APK, verifies its SHA-256, package identity, increasing Android version code and signing certificate, then opens Android's installer. Android may ask you to allow installations from Scout and will ask you to approve the update. Opening the installer is not a claim that installation completed. Keep a field backup.
 
 Browser updates remain separate: new offline assets wait behind the **Update app** banner and save the open record before activating. The header update checker identifies the browser edition rather than attempting to install an APK there.
 
@@ -115,13 +129,14 @@ Imports preview the merge before committing. Revision ancestry preserves newer r
 
 Original v1 `hkscout_v1` localStorage and `hkscout` photo database migrate on the same origin; neither source is cleared. Original v1 JSON backups also import. Global legacy aperture and white-balance settings are preserved in the archive, but are not asserted as historical per-photo facts. Old custom itinerary/progress/checklist fields remain in the legacy archive; the new interface uses photo sets. If v1 migration fails, source data stays intact.
 
-No account, analytics SDK or automatic cloud/AI photo transfer is used. Optional place-name lookups use the device address provider or BigDataCloud as described above; update checks contact GitHub. GPS, notes and image metadata remain sensitive when you choose to share a package. The external map link opens Google Maps; offline basemaps are not included. New web builds wait for explicit activation through **Update app**, after saving the open record.
+No account, analytics SDK or automatic cloud/AI photo transfer is used. Automatic weather sends rounded fresh GPS to Open-Meteo and can be disabled; optional place-name lookups use the device address provider or BigDataCloud as described above; update checks contact GitHub. GPS, notes and image metadata remain sensitive when you choose to share a package. The external map link opens Google Maps; offline basemaps are not included. New web builds wait for explicit activation through **Update app**, after saving the open record.
 
 ## Development and validation
 
 - `npm test`: model, transactional storage, packages, clocks, solar dates and desktop importer integration.
 - `npm run test:browser`: Chromium workflow including mobile layout, controlled GPS, offline reload, lighting, image/color notes, catalogue review, handoff restore, repeated import and v1 migration. Starts its own local test server. Install a test browser with `npx playwright install chromium` if none is available.
 - `SCOUT_TEST_ENGINE=webkit npm run test:browser`: optional WebKit pass after installing its Playwright browser. Desktop engine tests do not replace iPhone testing.
+- Android: `./gradlew :app:testDebugUnitTest` from `android/` runs native preview geometry and size-selection regressions (use `gradlew.bat` on Windows).
 - `npm run build`: bundles dependencies locally, fingerprints the offline cache and generates Capacitor assets.
 
 See [HANDOFF.md](HANDOFF.md) for implementation boundaries, validation evidence and the next device checks.
