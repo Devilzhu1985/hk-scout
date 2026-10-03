@@ -17,9 +17,9 @@ export function put(state, r) {
   if (i < 0) state.records.push(r); else state.records[i] = r;
 }
 export function timezoneValid(tz) { try { new Intl.DateTimeFormat('en', {timeZone: tz}).format(); return !!tz; } catch { return false; } }
-export function localTime(value, tz, seconds = false) {
+export function localTime(value, tz, seconds = false, locale = 'en-GB') {
   if (!value) return 'Unknown';
-  try { return new Intl.DateTimeFormat('en-GB', {timeZone: tz, dateStyle: 'medium', timeStyle: seconds ? 'medium' : 'short'}).format(new Date(value)); } catch { return 'Unknown'; }
+  try { return new Intl.DateTimeFormat(locale, {timeZone: tz, dateStyle: 'medium', timeStyle: seconds ? 'medium' : 'short'}).format(new Date(value)); } catch { return 'Unknown'; }
 }
 export function ev100(aperture, shutter, iso) {
   return [aperture, shutter, iso].every(v => Number.isFinite(v) && v > 0) ? Math.log2(aperture ** 2 / shutter) - Math.log2(iso / 100) : null;
@@ -66,7 +66,14 @@ export function validateRecords(records) {
       assert(methods.includes(r.method) && Number.isFinite(r.value) && (r.method.endsWith('lux') ? r.value>=0 : true), 'Invalid lighting reading.');
       assert(text(r.setId,180) && text(r.instrument,200) && text(r.protocol,500) && text(r.calibration,200) && date(r.measuredAt), 'Incomplete measurement provenance.');
     }
-    if (r.kind === 'asset') assert(text(r.fileName,500) && ['field','camera'].includes(r.source) && (!r.setId || text(r.setId,180)) && text(r.notes ?? ''), 'Invalid image record.');
+    if (r.kind === 'asset') {
+      assert(text(r.fileName,500) && ['field','camera'].includes(r.source) && (!r.setId || text(r.setId,180)) && text(r.notes ?? ''), 'Invalid image record.');
+      if(r.originals!==undefined){
+        assert(Array.isArray(r.originals)&&r.originals.length<=2,'Invalid original image list.');
+        const ids=new Set();
+        for(const o of r.originals){assert(o&&/^[\w-]{1,180}$/.test(o.blobId)&&!ids.has(o.blobId)&&text(o.fileName,500)&&/^[a-f0-9]{64}$/.test(o.sha256)&&['image/jpeg','image/png','image/webp','image/heic','image/heif','image/x-adobe-dng'].includes(o.mime)&&Number.isSafeInteger(o.size)&&o.size>=0&&o.size<=56*1024*1024,'Invalid original image.');ids.add(o.blobId);}
+      }
+    }
     if (r.kind === 'clock') assert(text(r.camera,200) && date(r.from) && date(r.to) && Date.parse(r.from)<=Date.parse(r.to) && Number.isFinite(r.offsetSeconds) && Math.abs(r.offsetSeconds)<=172800 && Number.isInteger(r.utcOffsetMinutes) && Math.abs(r.utcOffsetMinutes)<=840, 'Invalid camera clock segment.');
   }
   return records;

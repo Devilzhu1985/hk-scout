@@ -6,6 +6,21 @@ import {summarize} from './model.js';
 import {inspectLightCapability} from './light-capability.js';
 export const native=Capacitor.isNativePlatform();
 const LightMeter=registerPlugin('LightMeter');
+const ReferenceCamera=registerPlugin('ReferenceCamera'),ScoutUpdater=registerPlugin('ScoutUpdater');
+export const nativeCamera=native&&Capacitor.isPluginAvailable('ReferenceCamera');
+export const captureReference=options=>ReferenceCamera.capture(options);
+export const pendingCaptures=()=>ReferenceCamera.pending();
+export const acknowledgeCapture=id=>ReferenceCamera.acknowledge({id});
+export const shareStagedCapture=id=>ReferenceCamera.shareStaged({id});
+export const installUpdate=update=>ScoutUpdater.install(update);
+const PlaceNames=registerPlugin('PlaceNames');
+export const nativePlaceNames=native&&Capacitor.isPluginAvailable('PlaceNames');
+export const lookupNativePlace=options=>PlaceNames.lookup(options);
+export async function readCaptureFile(item){
+  const response=await fetch(Capacitor.convertFileSrc(item.path));
+  if(!response.ok)throw Error('Could not read the captured original. Use Recover camera captures to retry.');
+  return new File([await response.blob()],item.name,{type:item.mime});
+}
 let stopCurrent=()=>{},meterEpoch=0;
 export function stopMeter(){meterEpoch++;stopCurrent();stopCurrent=()=>{};}
 export async function getLightCapability() {
@@ -58,7 +73,8 @@ export async function deliver(filename,bytes) {
     await Share.share({title:'Scout field package',files:[result.uri],dialogTitle:'Save your field package'});
     return;
   }
-  const file=new File([bytes],filename,{type:'application/zip'});
+  const type={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif',dng:'image/x-adobe-dng',zip:'application/zip'}[filename.split('.').at(-1).toLowerCase()]||'application/octet-stream';
+  const file=new File([bytes],filename,{type});
   const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopMeter();});

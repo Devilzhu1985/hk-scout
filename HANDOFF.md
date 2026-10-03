@@ -1,10 +1,30 @@
-# Scout 2.0 implementation handoff
+# Scout 2.1 implementation handoff
 
 Date: 2026-10-03. Repository: hk-scout. This is the local implementation handoff, distinct from the shoot-specific HANDOFF.md generated inside each export.
 
 ## Phone test publication
 
-The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.0.1-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.0-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+
+## Guided capture, bilingual camera and updates · 2.1.0
+
+Latest user decisions: English/Simplified Chinese switching; phone camera capture with original-file retention; native RAW/manual Kelvin only when actually exposed; an installed-app update button; automatic GPS and optional place names; a guided next-action flow with explicit **Finish stop**; publish browser and Android editions together.
+
+Workflow: capture now without trip/city typing → Sony slate confirmation or skip → phone reference or Sony-only skip → lighting or skip → Finish stop → Start next stop / backup. Finishing records the closed matching interval and leaves records editable. Starting another stop prompts before closing an unfinished stop. Optional place/camera details, light diagnostics and checklists are collapsed.
+
+Data additions remain optional in schema 2: set.autoName, placeLookup (source and approximate flag), slateStatus/slateConfirmedAt, referenceSkipped and lightingSkipped; asset.originals[] (blobId, filename, MIME, size, SHA-256), phoneCapture (requested and actual settings, device/camera and capture time). All writes still belong to the Store transaction; originals and previews commit atomically. Native files are acknowledged/deleted only after commit. Old records remain readable; old 2.0 clients cannot import new HEIC/DNG attachments and should update first. No migration fabricates an original for an older compressed-only asset.
+
+Local language and onlinePlaceNames preferences do not travel with field records. Template translation protects substitutions: user text, IDs, filenames, stored enum values and code blocks are not implicitly translated. Form saves track edited fields/versions so background GPS refreshes do not submit unrelated stale form fields.
+
+Native camera limits: Android Camera2 rear camera, supported outputs up to 24 MP, auto exposure/focus, RAW DNG where exposed, real AWB presets. Manual numeric Kelvin is offered only with API 36 CCT mode + range + request/result keys + AWB-off support. No estimated RGB-to-Kelvin conversion. Applied values are kept separate from requested values, and an unconfirmed request raises a notice. This is not a full replacement for OEM Pro mode. Browser capture cannot force OEM mode or RAW. No iOS native app was added.
+
+Update checks fetch public releases only on request. Android downloads only the expected repository's APK URL over HTTPS, checks checksum, app ID, newer versionCode and installed signing identity before handing control to the system installer. Installation permission and approval remain user actions; cancellation is not reported as successful installation. The previous installed build needs a one-time manual update to obtain this button. VersionName 2.1.0 / versionCode 4; minSdk 26; existing app ID/signing identity retained.
+
+Verification for this change: 20 unit/integration cases including original DNG transport checksums, rejected altered manifests, capability boundaries, safe localization, semantic update selection and delayed/invalid coordinate lookup protection. Chromium covers the complete old workflow plus fast start, held/denied GPS, untranslated user notes, Chinese roles with canonical values, camera input, exact original JPEG export, skip/finish/next-stop, update-check fixtures and saved language. Camera/installation hardware behavior still requires physical testing; browser mocks are not device evidence.
+
+New implementation areas: src/i18n.js + zh.js; src/photos.js; src/location.js; src/updates.js; ReferenceCameraPlugin/Activity, PlaceNamesPlugin and ScoutUpdaterPlugin. README contains the full operating instructions and provider/Android references.
+
+Before the trip, test on the actual S25 Edge: install over 2.0.1 without uninstalling, verify records, capture portrait RAW+JPEG, inspect original DNG and actual WB metadata, deny/retry permissions, interrupt and recover a completed capture, try place lookup offline, and export/restore originals. Check the next real release's installer permission/approval path; the current build cannot install itself as a newer version. Xiaomi/iPhone and Sony real ARW checks remain outstanding.
 
 ## Lighting availability correction · 2.0.1
 
@@ -81,8 +101,8 @@ Required physical trial before relying on the app for a trip:
 
 ## Submission note
 
-Functional changes: generalized trips and capture sets; phone observations, GPS, lighting and color reference; camera slate and clock review; read-only camera catalogue and preview import; offline package merge, conflict resolution, recovery and assistant handoff.
+Functional changes: guided field capture with automatic GPS, approximate place names, optional steps and explicit finish/next-stop; English/Chinese UI and Hong Kong itinerary; phone camera capture and original retention; Android RAW/manual-WB capability controls, staged-capture recovery and in-app update initiation.
 
-Technical changes: modular browser application, schema 2/IndexedDB transactions, checked ZIP batches and revision ancestry, ExifTool/Sharp importer, Capacitor Android project and native light-sensor bridge, build scripts and meaningful data/browser tests. Generated root assets support the existing static hosting model.
+Technical changes: literal-only localization and locale dates, edited-field autosave protection, original manifests and checked ZIP transport, Camera2/DngCreator capture, native Geocoder and guarded APK downloader/installer, compatibility checks and browser/integrity regression coverage. Generated static/offline and Capacitor assets are rebuilt for the same release.
 
-Affected Markdown files: README.md and HANDOFF.md. No other Markdown files are part of this implementation.
+Affected Markdown files: README.md and HANDOFF.md. No other Markdown files were changed.
