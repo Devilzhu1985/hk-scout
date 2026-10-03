@@ -1,10 +1,26 @@
-# Scout 2.1.2 implementation handoff
+# Scout 2.1.3 implementation handoff
 
 Date: 2026-10-03. Repository: hk-scout. This is the local implementation handoff, distinct from the shoot-specific HANDOFF.md generated inside each export.
 
 ## Phone test publication
 
-The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.2-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.3-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+
+## User-chosen destinations and public camera originals · 2.1.3
+
+User decisions: choose the next stop manually and obtain travel directions; use a familiar camera layout and save new originals in the normal Camera folder. Subsequent question: whether GPS/weather work in Hong Kong and mainland China. This iteration implements these concrete flow changes; the earlier investigation's full editable-trip/custom-plan redesign remains a proposal.
+
+Flow: Finish → Choose next stop (itinerary occurrence / recorded place / typed destination) → Google walking/transit/driving links or Amap destination → Arrived → new capture/slate. Choosing/opening directions makes no set, does not request capture GPS, and does not end an existing interval. A device-local nextDestination survives reload, is scoped to activeTrip, can be replaced/cleared and is cleared when that arrival creates a capture. Route origins are left to the map app's current location. Amap coordinates use its documented marker endpoint with coordinate=wgs84; name-only targets use its city-qualified search endpoint. No route ETA is invented or cached as a live estimate. Bottom arrival/change/close controls stay visible in short viewports. The unfinished-capture warning and beginSet guard cover this device's open sets across trips without closing other devices' captures.
+
+set.plannedStopKey is an optional schema-2 field identifying an occurrence in the original Hong Kong v1 template. New itinerary/arrival captures and revisits preserve it; per-occurrence counts derive from finished sets. Same-place dusk/night slots differ. Existing names, QR/set/trip IDs, raw GPS, photo links and historical intervals are preserved. No name-only backfill, editable itinerary, old custom-plan UI migration or automatic cross-device sync is claimed. Store.change remains the only notebook write owner; nextDestination is device-local, and the optional validated key travels with field ZIPs.
+
+Camera UI: dark edge-inset layout, weighted fit viewfinder, compact RAW/JPEG control, separate apply/cancel WB dialog, fixed 76dp shutter, capability help. CameraPreview geometry and camera hardware capability requirements remain unchanged. New native captures first commit a staged manifest, then GalleryWriter copies each original to MediaStore DCIM/Camera, verifies SHA-256 readback and publishes it. Pending URIs and per-file success are journalled atomically for retry. A successfully published copy is verified rather than overwritten after an interrupted journal update. Android 8/9 uses a legacy permission/path branch; modern Android uses IS_PENDING without broad storage access. ReferenceCamera.publish retries, acknowledge refuses cleanup until gallery success, and web-side acceptance also waits for notebook commit. Existing notebook records make interrupted acknowledgements idempotent. Public gallery files are never deleted by notebook cleanup. Gallery status/URIs are local recovery metadata, excluded from exported phoneCapture evidence.
+
+Regional boundary: installed Capacitor geolocation 8.2.3 already defaulted to LocationManager fallback. Scout now specifies it explicitly and raises native fix timeout to 30 seconds. Open-Meteo remains the consented weather provider; no additional weather service or location transmission was added. Public-coordinate probes for Hong Kong, Shanghai and Beijing returned valid current weather/time zones from the development computer on 2026-10-03. These are not on-site tests. Global weather coverage is distinct from mainland network reachability. Address lookup can fail independently of coordinates. Public map providers receive a destination only when the user opens their link.
+
+Validation: 32 JS tests; navigation browser flow covers persistence without creating captures, walking/transit/driving URLs, Amap, separate dusk/night association, ZIP association preservation, cross-trip open intervals and Chinese UI. Arrival button bounds/44px minimum checked at 390×844, 360×640, 320×568 and 844×390; Chinese route screenshot inspected. Existing full Chromium workflow passed. Thirteen JVM tests (eight preview geometry plus five byte-copy/truncation/corruption/I/O cases) and Android debug build passed. MediaStore on a real device, Samsung camera UI, legacy Android permission handling, actual DNG gallery presentation, Hong Kong/mainland networks and external map-app launching still require physical validation; no device was connected.
+
+VersionName 2.1.3 / versionCode 7, unchanged application ID and signing identity. Before relying on this preview, verify an actual S25 Edge RAW+JPEG capture appears in DCIM/Camera and Scout, retry gallery saving after a storage failure, check manual WB and unchanged preview framing, and follow a route to a known entrance.
 
 ## Automatic slate GPS and compact layout · 2.1.2
 

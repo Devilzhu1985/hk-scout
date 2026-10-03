@@ -1,0 +1,36 @@
+import {chromium,expect} from '@playwright/test';
+import {spawn} from 'node:child_process';
+import {mkdir} from 'node:fs/promises';
+import path from 'node:path';
+const root=path.resolve(import.meta.dirname,'..'),origin='http://127.0.0.1:4181';
+const server=spawn(process.execPath,['scripts/serve.mjs'],{cwd:root,env:{...process.env,SCOUT_PORT:'4181'},stdio:['ignore','pipe','inherit'],windowsHide:true});
+await new Promise((resolve,reject)=>{server.stdout.once('data',resolve);server.once('error',reject);});
+let browser;
+try{
+ browser=await chromium.launch({headless:true,...(process.platform==='win32'?{executablePath:process.env.SCOUT_BROWSER_PATH||path.join(process.env.LOCALAPPDATA,'ms-playwright/chromium-1223/chrome-win64/chrome.exe')}:{})});
+ const context=await browser.newContext({viewport:{width:390,height:844},locale:'en-GB',serviceWorkers:'block'});
+ await context.route('**/*',route=>route.request().url().startsWith(origin)?route.continue():route.abort());
+ const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.addInitScript(()=>Object.defineProperty(navigator,'geolocation',{value:{getCurrentPosition(ok,fail){fail({code:1});}}}));
+ const read=()=>page.evaluate(async()=>{const db=await new Promise((resolve,reject)=>{const q=indexedDB.open('scout-v2');q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});return new Promise((resolve,reject)=>{const tx=db.transaction(['state','local']);const state=tx.objectStore('state').get('main'),local=tx.objectStore('local').get('preferences');tx.oncomplete=()=>{db.close();resolve({state:state.result,local:local.result});};tx.onerror=()=>reject(tx.error);});});
+ await page.goto(origin);await page.locator('[data-action=new-trip]').click();await page.locator('#trip-form [name=name]').fill('Hong Kong audit');await page.locator('#trip-form [name=template]').selectOption('hongkong');await page.locator('#trip-form button[type=submit]').click();
+ await page.locator('[data-action=choose-next]').click();await page.locator('#destination-search').fill('Apliu');await expect(page.locator('[data-action=choose-destination]')).toHaveCount(2);
+ await page.locator('[data-action=choose-destination]').first().click();await expect(page.locator('#modal')).toContainText('Dusk');
+ for(const mode of ['walking','transit','driving'])await expect(page.locator(`[data-travel-mode=${mode}]`)).toHaveAttribute('href',new RegExp('travelmode='+mode));
+ await expect(page.locator('[data-amap]')).toHaveAttribute('href',/^https:\/\/uri.amap.com\/search\?/);
+ let data=await read();expect(data.state.records.filter(r=>r.kind==='set')).toHaveLength(0);const chosen=data.local.nextDestination.key;
+ await page.locator('#modal [data-action=close]').click();await page.reload();await page.locator('[data-action=route]').click();
+ await mkdir(path.join(root,'test-results'),{recursive:true});
+ for(const [width,height] of [[390,844],[360,640],[320,568],[844,390]]){await page.setViewportSize({width,height});for(const expanded of [false,true]){await page.locator('.route-scroll details').evaluate((el,open)=>el.open=open,expanded);for(const button of await page.locator('.route-footer button').all()){const box=await button.boundingBox();expect(box.height).toBeGreaterThanOrEqual(44);expect(box.y).toBeGreaterThanOrEqual(0);expect(box.y+box.height).toBeLessThanOrEqual(height+1);expect(await button.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})).toBe(true);}}}await page.locator('.route-scroll details').evaluate(el=>el.open=false);
+ await page.setViewportSize({width:390,height:844});await page.locator('[data-action=arrive-next]').click();await expect(page.locator('#slate-photo')).toBeVisible();await page.locator('#modal [data-action=slate-skip]').click();
+ data=await read();const first=data.state.records.find(r=>r.kind==='set');expect(first.plannedStopKey).toBe(chosen);expect(data.local.nextDestination).toBeUndefined();
+ await page.locator('#next-step [data-action=finish]').click();await page.locator('#next-step [data-action=choose-next]').click();await page.locator('#destination-search').fill('Apliu');await expect(page.locator('#destination-list')).toContainText('Finished captures: 1');
+ await page.locator('[data-action=choose-destination]').nth(1).click();await expect(page.locator('#modal')).toContainText('Night');await page.locator('[data-action=arrive-next]').click();await page.locator('#modal [data-action=slate-skip]').click();
+ await page.locator('[data-action=nav][data-id=settings]').first().click();await page.locator('[data-action=new-trip]').click();await page.locator('#trip-form [name=name]').fill('Shanghai audit');await page.locator('#trip-form button[type=submit]').click();await expect(page.locator('#app')).toContainText('Unfinished capture in another trip');
+ await page.locator('[data-action=choose-next]').click();await page.getByText('Somewhere else',{exact:true}).click();await page.locator('#destination-form [name=name]').fill('外滩 & 北入口');await page.locator('#destination-form [name=city]').fill('上海');await page.locator('#destination-form button[type=submit]').click();
+ await page.locator('[data-action=arrive-next]').click();await expect(page.locator('#modal')).toContainText('Hong Kong audit');await page.locator('[data-action=finish-start]').click();await page.locator('#modal [data-action=slate-skip]').click();
+ data=await read();expect(data.state.records.filter(r=>r.kind==='set'&&!r.endedAt)).toHaveLength(1);expect(data.state.records.filter(r=>r.kind==='set')).toHaveLength(3);
+ await page.locator('#next-step [data-action=finish]').click();await page.locator('#language').selectOption('zh');await page.locator('#next-step [data-action=choose-next]').click();await expect(page.locator('#modal')).toContainText('选择下一站');await page.locator('[data-action=choose-destination]').first().click();await expect(page.locator('[data-action=arrive-next]')).toHaveText('已到达 · 开始拍摄');
+ await page.screenshot({path:path.join(root,'test-results/next-stop-chinese.png')});expect(errors).toEqual([]);
+ console.log('Navigation: destination selection/reload, three route modes, Amap, separate itinerary visits, cross-trip capture boundary and Chinese UI passed.');
+}finally{await browser?.close();server.kill();}

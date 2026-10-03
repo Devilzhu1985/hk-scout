@@ -10,6 +10,7 @@ const ReferenceCamera=registerPlugin('ReferenceCamera'),ScoutUpdater=registerPlu
 export const nativeCamera=native&&Capacitor.isPluginAvailable('ReferenceCamera');
 export const captureReference=options=>ReferenceCamera.capture(options);
 export const pendingCaptures=()=>ReferenceCamera.pending();
+export const publishCapture=id=>ReferenceCamera.publish({id});
 export const acknowledgeCapture=id=>ReferenceCamera.acknowledge({id});
 export const shareStagedCapture=id=>ReferenceCamera.shareStaged({id});
 export const installUpdate=update=>ScoutUpdater.install(update);
@@ -62,7 +63,7 @@ export async function measureLight(onReading) {
   });
 }
 export async function locate() {
-  const p=native?await Geolocation.getCurrentPosition({enableHighAccuracy:true,timeout:15000,maximumAge:0}):await new Promise((resolve,reject)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:15000,maximumAge:0}):reject(Error('Location unavailable')));
+  const p=native?await Geolocation.getCurrentPosition({enableHighAccuracy:true,timeout:30000,maximumAge:0,enableLocationFallback:true}):await new Promise((resolve,reject)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:15000,maximumAge:0}):reject(Error('Location unavailable')));
   if(!Number.isFinite(p.timestamp)||Math.abs(Date.now()-p.timestamp)>30000)throw Error('The location provider returned an old fix. Try again or enter coordinates.');
   return {lat:p.coords.latitude,lng:p.coords.longitude,accuracy:p.coords.accuracy,capturedAt:new Date(p.timestamp).toISOString(),method:'gps'};
 }

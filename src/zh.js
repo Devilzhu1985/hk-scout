@@ -1,4 +1,44 @@
 export const zh=Object.fromEntries(`
+Choose next stop	自选下一站
+Route details	路线说明
+Clear destination	取消目的地
+Choose your next stop	选择下一站
+Pick any planned or recorded place, or enter a new destination. A new capture starts only after you arrive.	从计划或去过的地点中选择，也可输入新目的地。到达后才开始新的拍摄记录。
+Find a destination	查找目的地
+Place or day	地点或天数
+Somewhere else	其他目的地
+Destination / address	目的地／地址
+City / area	城市／地区
+Choose this destination	选择这个目的地
+Choose	选择
+Finished captures	已结束的拍摄
+No matching places. Enter a destination below.	没有匹配地点，可在下方输入目的地。
+Choose a destination in the current trip.	请在当前行程中选择目的地。
+YOUR CHOSEN NEXT STOP	你选择的下一站
+Directions & arrival	路线与到达
+Change destination	更换目的地
+Directions	怎么去
+Unfinished capture in another trip	其他行程中有未结束的拍摄
+Return to capture	返回当前拍摄
+How would you like to get there?	你想怎么过去？
+Walking route	步行路线
+Public transport	公共交通方案
+Driving route	驾车路线
+Maps uses your current location and shows route options, journey times and transfers. Check the destination and entrance before leaving.	地图会根据你当前的位置提供路线、预计时间和换乘方案。出发前请确认目的地和入口。
+Opening a route sends the chosen destination to Google Maps. Internet is normally needed; Scout keeps your destination offline.	打开路线会将所选目的地发送给 Google 地图。路线通常需要联网；Scout 会离线保留你的选择。
+Open destination in Amap ↗	在高德打开目的地 ↗
+For mainland China: confirm the place in Amap, then choose its route button and travel mode.	中国大陆可使用高德：确认地点后，点击路线并选择出行方式。
+Arriving and starting a capture are separate steps. Your previous capture keeps its original GPS and time.	到达后再开始拍摄。上一站的 GPS 和拍摄时间保持原样。
+Arrived · start capture	已到达 · 开始拍摄
+Choose another stop	改选其他地点
+Choose where to go next, or export a backup when you finish shooting.	下一站由你自己选；结束今天的拍摄也可以导出备份。
+Starting the next stop finishes these open captures on this device, including other trips.	开始下一站会结束本设备上列出的未完成拍摄，包括其他行程中的记录。
+New camera originals also save to DCIM/Camera in the system gallery.	新拍原片也会保存到系统相册的 DCIM/Camera 文件夹。
+Reference saved · gallery copy pending	参考记录已保存 · 相册副本待保存
+Your reference is saved in Scout. The staged originals are retained until the system gallery copy succeeds.	参考记录已保存在 Scout。系统相册保存成功前，临时原片会一直保留。
+Gallery storage is unavailable.	系统相册暂时无法写入。
+Retry gallery save	重试保存到相册
+Originals saved in Scout and DCIM/Camera.	原片已保存至 Scout 和 DCIM/Camera。
 Light reading · optional	光照读数 · 可选
 Details & instructions	详情与说明
 Reading source	读数来源
@@ -381,7 +421,7 @@ Save sample in image notes	将取样保存到图片笔记
 Saved GPS with low accuracy. Add a landmark note.	已保存低精度 GPS，请补充地标说明。
 Saved on this device	已保存到本机
 Saving…	正在保存…
-Scout 2.1.2 · local files first · no analytics or automatic cloud/AI upload	Scout 2.1.2 · 本地文件优先 · 无统计跟踪或自动云端 / AI 上传
+Scout 2.1.3 · local files first · no analytics or automatic cloud/AI upload	Scout 2.1.3 · 本地文件优先 · 无统计跟踪或自动云端 / AI 上传
 Scout ZIP, desktop catalogue ZIP, or original v1 JSON backup.	Scout ZIP、电脑目录 ZIP 或原 v1 JSON 备份。
 Scout built-in light meter	Scout 内置测光
 Scout for Android	安卓 Scout

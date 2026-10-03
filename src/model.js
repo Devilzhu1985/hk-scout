@@ -64,6 +64,7 @@ export function validateRecords(records) {
       if (r.location) assert(Number.isFinite(r.location.lat) && Math.abs(r.location.lat)<=90 && Number.isFinite(r.location.lng) && Math.abs(r.location.lng)<=180 && (r.location.accuracy == null || Number.isFinite(r.location.accuracy) && r.location.accuracy >= 0), 'Invalid coordinates.');
       if(r.weather!=null)assert(validWeather(r.weather),'Invalid weather snapshot.');
       if(r.autoTimezone!==undefined)assert(typeof r.autoTimezone==='boolean','Invalid automatic time zone preference.');
+      if(r.plannedStopKey!=null)assert(text(r.plannedStopKey,180)&&/^hk-v1:\d+:\d+:[a-z0-9_]+$/.test(r.plannedStopKey),'Invalid itinerary visit reference.');
     }
     if (r.kind === 'reading') {
       assert(methods.includes(r.method) && Number.isFinite(r.value) && (r.method.endsWith('lux') ? r.value>=0 : true), 'Invalid lighting reading.');

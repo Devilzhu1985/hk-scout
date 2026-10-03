@@ -22,7 +22,8 @@ import org.json.*;
 public class ReferenceCameraActivity extends Activity implements TextureView.SurfaceTextureListener {
     private TextureView texture;
     private TextView status;
-    private Button shutter;
+    private Button shutter,wbButton;
+    private String cameraHelp="";
     private CheckBox rawToggle;
     private Spinner whiteBalance;
     private EditText kelvin;
@@ -57,24 +58,39 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
     @Override public void onCreate(Bundle state){
         super.onCreate(state);chinese="zh".equals(getIntent().getStringExtra("language"));
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        LinearLayout layout=new LinearLayout(this);layout.setOrientation(LinearLayout.VERTICAL);layout.setPadding(18,18,18,18);layout.setBackgroundColor(Color.rgb(244,243,236));
-        // Insets keep controls clear of Android 15/16 edge-to-edge system bars.
-        layout.setOnApplyWindowInsetsListener((v,insets)->{v.setPadding(18,insets.getSystemWindowInsetTop()+12,18,insets.getSystemWindowInsetBottom()+12);return insets;});
-        TextView title=new TextView(this);title.setText(tr("Scout reference camera","Scout 参考相机"));title.setTextSize(23);layout.addView(title);
+        LinearLayout layout=new LinearLayout(this);layout.setOrientation(LinearLayout.VERTICAL);layout.setBackgroundColor(Color.BLACK);
+        layout.setOnApplyWindowInsetsListener((v,insets)->{v.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());return insets;});
+        LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);top.setPadding(dp(8),0,dp(8),0);
+        Button cancel=new Button(this);cancel.setText("×");cancel.setTextSize(26);cancel.setContentDescription(tr("Close camera","关闭相机"));cancel.setOnClickListener(v->finish());top.addView(cancel,new LinearLayout.LayoutParams(dp(48),dp(48)));
+        TextView title=new TextView(this);title.setText("SCOUT");title.setTextColor(Color.WHITE);title.setTextSize(16);title.setGravity(Gravity.CENTER);top.addView(title,new LinearLayout.LayoutParams(0,dp(48),1));
+        rawToggle=new CheckBox(this);rawToggle.setText("RAW + JPEG");rawToggle.setTextColor(Color.WHITE);rawToggle.setTextSize(12);rawToggle.setEnabled(false);top.addView(rawToggle,new LinearLayout.LayoutParams(-2,dp(48)));layout.addView(top);
         FrameLayout viewfinder=new FrameLayout(this);viewfinder.setBackgroundColor(Color.BLACK);
         texture=new TextureView(this);texture.setOpaque(false);texture.setSurfaceTextureListener(this);viewfinder.addView(texture,new FrameLayout.LayoutParams(-1,-1));layout.addView(viewfinder,new LinearLayout.LayoutParams(-1,0,1));
-        ScrollView scroll=new ScrollView(this);LinearLayout controls=new LinearLayout(this);controls.setOrientation(1);scroll.addView(controls);layout.addView(scroll,new LinearLayout.LayoutParams(-1,(int)(260*getResources().getDisplayMetrics().density)));
-        status=new TextView(this);status.setText(tr("Checking camera…","正在检查相机…"));controls.addView(status);
-        rawToggle=new CheckBox(this);rawToggle.setText("RAW DNG + JPEG");rawToggle.setEnabled(false);controls.addView(rawToggle);
-        whiteBalance=new Spinner(this);controls.addView(whiteBalance);
-        kelvin=new EditText(this);kelvin.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);kelvin.setText("5500");kelvin.setHint(tr("White balance K (not measured CCT)","白平衡 K（非实测色温）"));kelvin.setEnabled(false);controls.addView(kelvin);
-        Button apply=new Button(this);apply.setText(tr("Apply white balance","应用白平衡"));controls.addView(apply);apply.setOnClickListener(v->applyWhiteBalance());
-        shutter=new Button(this);shutter.setText(tr("Take reference photo","拍摄参考照片"));shutter.setEnabled(false);controls.addView(shutter);shutter.setOnClickListener(v->capture());
-        Button cancel=new Button(this);cancel.setText(tr("Cancel","取消"));controls.addView(cancel);cancel.setOnClickListener(v->finish());setContentView(layout);
+        status=new TextView(this);status.setText(tr("Checking camera…","正在检查相机…"));status.setTextColor(Color.WHITE);status.setTextSize(12);status.setGravity(Gravity.CENTER);status.setPadding(dp(12),dp(8),dp(12),dp(8));layout.addView(status);
+        whiteBalance=new Spinner(this);kelvin=new EditText(this);kelvin.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);kelvin.setText("5500");kelvin.setHint(tr("White balance K","白平衡 K"));kelvin.setEnabled(false);
+        LinearLayout controls=new LinearLayout(this);controls.setPadding(dp(12),dp(4),dp(12),dp(4));controls.setGravity(Gravity.CENTER);
+        wbButton=new Button(this);wbButton.setText("WB\nAUTO");wbButton.setTextSize(12);wbButton.setEnabled(false);wbButton.setOnClickListener(v->whiteBalanceDialog());controls.addView(wbButton,new LinearLayout.LayoutParams(0,dp(60),1));
+        FrameLayout shutterArea=new FrameLayout(this);controls.addView(shutterArea,new LinearLayout.LayoutParams(0,dp(88),1));
+        shutter=new Button(this);shutter.setText("");shutter.setContentDescription(tr("Take reference photo","拍摄参考照片"));shutter.setEnabled(false);
+        android.graphics.drawable.GradientDrawable circle=new android.graphics.drawable.GradientDrawable();circle.setShape(android.graphics.drawable.GradientDrawable.OVAL);circle.setColor(Color.WHITE);circle.setStroke(dp(5),Color.rgb(160,174,143));shutter.setBackground(circle);shutter.setBackgroundTintList(null);
+        shutterArea.addView(shutter,new FrameLayout.LayoutParams(dp(76),dp(76),Gravity.CENTER));shutter.setOnClickListener(v->capture());
+        Button info=new Button(this);info.setText(tr("INFO","说明"));info.setTextSize(12);info.setOnClickListener(v->new android.app.AlertDialog.Builder(this).setTitle(tr("Camera & originals","相机与原片")).setMessage(cameraHelp).setPositiveButton(tr("Close","关闭"),null).show());controls.addView(info,new LinearLayout.LayoutParams(0,dp(60),1));layout.addView(controls);
+        TextView savedTo=new TextView(this);savedTo.setText(tr("Originals → DCIM/Camera + Scout","原片 → DCIM/Camera + Scout"));savedTo.setTextColor(Color.LTGRAY);savedTo.setTextSize(11);savedTo.setGravity(Gravity.CENTER);savedTo.setPadding(0,0,0,dp(10));layout.addView(savedTo);setContentView(layout);
         thread=new HandlerThread("ScoutCamera");thread.start();worker=new Handler(thread.getLooper());
     }
     @Override public void onAttachedToWindow(){super.onAttachedToWindow();((DisplayManager)getSystemService(DISPLAY_SERVICE)).registerDisplayListener(displayListener,new Handler(Looper.getMainLooper()));}
     @Override public void onDetachedFromWindow(){((DisplayManager)getSystemService(DISPLAY_SERVICE)).unregisterDisplayListener(displayListener);super.onDetachedFromWindow();}
+    private int dp(int value){return Math.round(value*getResources().getDisplayMetrics().density);}
+    private void whiteBalanceDialog(){if(busy||wbModes.isEmpty())return;
+        if(whiteBalance.getParent()!=null)((ViewGroup)whiteBalance.getParent()).removeView(whiteBalance);
+        if(kelvin.getParent()!=null)((ViewGroup)kelvin.getParent()).removeView(kelvin);
+        LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);panel.setPadding(dp(20),dp(8),dp(20),dp(8));panel.addView(whiteBalance);panel.addView(kelvin);
+        TextView help=new TextView(this);help.setText(tr("Kelvin sets white balance; it does not measure the light's color temperature.","K 设置白平衡，并非测量现场光源色温。"));help.setPadding(0,dp(10),0,0);panel.addView(help);
+        android.app.AlertDialog dialog=new android.app.AlertDialog.Builder(this).setTitle(tr("White balance","白平衡")).setView(panel).setPositiveButton(tr("Apply","应用"),null).setNegativeButton(tr("Cancel","取消"),null).create();
+        dialog.setOnShowListener(d->dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{if(readWhiteBalance()){worker.post(this::preview);updateWbLabel();dialog.dismiss();}}));
+        dialog.setOnDismissListener(d->{int index=wbModes.indexOf(requestedWb);if(index>=0)whiteBalance.setSelection(index);kelvin.setText(""+requestedKelvin);});dialog.show();
+    }
+    private void updateWbLabel(){wbButton.setText(requestedWb==-1?"WB\n"+requestedKelvin+" K":"WB\n"+(requestedWb==1?"AUTO":whiteBalance.getSelectedItem().toString()));}
     private static boolean contains(int[] values,int target){if(values!=null)for(int v:values)if(v==target)return true;return false;}
     private static Size largest(Size[] sizes,long maxPixels){if(sizes==null)return null;return Arrays.stream(sizes).filter(s->(long)s.getWidth()*s.getHeight()<=maxPixels).max(Comparator.comparingLong(s->(long)s.getWidth()*s.getHeight())).orElse(null);}
     @Override public void onSurfaceTextureAvailable(SurfaceTexture surface,int w,int h){worker.post(this::openCamera);}
@@ -118,14 +134,16 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
     }catch(Exception e){fail(e.getMessage(),"无法打开相机："+e.getMessage());}}
     private void configureControls(){
         rawToggle.setEnabled(rawSize!=null);rawToggle.setChecked(rawSize!=null);
-        rawToggle.setText(rawSize==null?tr("RAW not exposed at a supported size (JPEG only)","此相机未提供支持尺寸的 RAW（仅 JPEG）"):"RAW DNG "+rawSize+" + JPEG "+jpegSize);
+        rawToggle.setText(rawSize==null?"JPEG":"RAW + JPEG");
         ArrayList<String> labels=new ArrayList<>();int[] available=characteristics.get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES);
         int[] candidates={1,2,3,4,5,6,7,8};String[] en={"Auto white balance","Incandescent","Fluorescent","Warm fluorescent","Daylight","Cloudy","Twilight","Shade"};String[] zh={"自动白平衡","白炽灯","荧光灯","暖荧光灯","日光","阴天","暮光","阴影"};
         for(int i=0;i<candidates.length;i++)if(contains(available,candidates[i])){wbModes.add(candidates[i]);labels.add(chinese?zh[i]:en[i]);}
         if(cctAvailable){wbModes.add(-1);labels.add(tr("Manual Kelvin","手动色温 K"));requestedKelvin=kelvinRange.clamp(5500);kelvin.setText(""+requestedKelvin);}
         whiteBalance.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,labels));
-        whiteBalance.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onItemSelected(AdapterView<?> p,View v,int i,long id){kelvin.setEnabled(wbModes.get(i)==-1);}public void onNothingSelected(AdapterView<?> p){}});
-        status.setText(tr("JPEG is processed. RAW keeps sensor data; WB remains editable. ","JPEG 已经过处理；RAW 保留传感器数据，白平衡可后期调整。 ")+(cctAvailable?tr("Manual K range: ","手动 K 范围：")+kelvinRange:tr("This camera does not expose manual Kelvin. Use a supported WB preset, or the phone camera’s Pro mode and import its files.","此相机未开放手动 K。可选白平衡预设，或在系统相机专业模式拍摄后导入。")));
+        whiteBalance.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onItemSelected(AdapterView<?> p,View v,int i,long id){kelvin.setEnabled(wbModes.get(i)==-1);kelvin.setVisibility(wbModes.get(i)==-1?View.VISIBLE:View.GONE);}public void onNothingSelected(AdapterView<?> p){}});
+        cameraHelp=tr("JPEG is processed. RAW keeps sensor data; WB remains editable. ","JPEG 已经过处理；RAW 保留传感器数据，白平衡可后期调整。 ")+(cctAvailable?tr("Manual K range: ","手动 K 范围：")+kelvinRange:tr("This camera does not expose manual Kelvin. Use a supported WB preset, or the phone camera’s Pro mode and import its files.","此相机未开放手动 K。可选白平衡预设，或在系统相机专业模式拍摄后导入。"));
+        cameraHelp+="\n\nJPEG "+jpegSize+(rawSize!=null?" · DNG "+rawSize:"")+"\n\n"+tr("Originals are copied unchanged to DCIM/Camera and linked to this Scout capture. Gallery apps may display only the JPEG preview of a RAW pair.","原片原样保存至 DCIM/Camera，并关联此次 Scout 记录。部分相册只显示 RAW 配对中的 JPEG 预览。");
+        status.setText(tr("Auto exposure · autofocus · rear camera","自动曝光 · 自动对焦 · 后置相机"));wbButton.setEnabled(!wbModes.isEmpty());
         transform();
     }
     private void transform(){if(previewSize==null||texture.getWidth()==0||texture.getHeight()==0)return;
@@ -159,7 +177,7 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
         requestedWb=mode;requestedKelvin=k;return true;
     }catch(Exception e){Toast.makeText(this,tr("Enter Kelvin within ","请输入范围内的色温 K：")+kelvinRange,Toast.LENGTH_LONG).show();return false;}}
     private void applyWhiteBalance(){if(!busy&&readWhiteBalance())worker.post(this::preview);}
-    private void capture(){if(busy||closing||!readWhiteBalance())return;rawEnabled=rawToggle.isChecked()&&rawReader!=null;busy=true;shutter.setEnabled(false);rawToggle.setEnabled(false);whiteBalance.setEnabled(false);kelvin.setEnabled(false);worker.post(()->{try{
+    private void capture(){if(busy||closing||!readWhiteBalance())return;rawEnabled=rawToggle.isChecked()&&rawReader!=null;busy=true;shutter.setEnabled(false);wbButton.setEnabled(false);status.setText(tr("Saving originals…","正在保存原片…"));rawToggle.setEnabled(false);whiteBalance.setEnabled(false);kelvin.setEnabled(false);worker.post(()->{try{
         captureId=UUID.randomUUID().toString();jpegBytes=null;captureResult=null;session.stopRepeating();
         CaptureRequest.Builder b=camera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);configure(b);b.addTarget(jpegReader.getSurface());if(rawEnabled)b.addTarget(rawReader.getSurface());b.set(CaptureRequest.JPEG_ORIENTATION,orientation);b.set(CaptureRequest.JPEG_QUALITY,(byte)100);
         worker.postDelayed(timeout,20000);session.capture(b.build(),new CameraCaptureSession.CaptureCallback(){public void onCaptureCompleted(CameraCaptureSession s,CaptureRequest request,TotalCaptureResult result){captureResult=result;finishCapture();}public void onCaptureFailed(CameraCaptureSession s,CaptureRequest request,CaptureFailure failure){fail("Capture failed; no reference saved","拍摄失败，未保存参考照片");}},worker);
@@ -174,7 +192,9 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
         if(rawEnabled){File raw=new File(dir,captureId+".dng");try(DngCreator creator=new DngCreator(characteristics,captureResult);FileOutputStream out=new FileOutputStream(raw)){creator.setOrientation(orientation==90?6:orientation==270?8:orientation==180?3:1);creator.writeImage(out,rawImage);out.getFD().sync();}finally{rawImage.close();rawImage=null;}files.put(fileInfo(raw,"image/x-adobe-dng"));}
         JSONObject result=new JSONObject();result.put("id",captureId);result.put("setId",getIntent().getStringExtra("setId"));result.put("files",files);result.put("capturedAt",java.time.Instant.now().toString());result.put("device",Build.MANUFACTURER+" "+Build.MODEL);result.put("cameraId",cameraId);result.put("raw",rawEnabled);result.put("requestedWbMode",requestedWb);result.put("actualAwbMode",captureResult.get(CaptureResult.CONTROL_AWB_MODE));result.put("iso",captureResult.get(CaptureResult.SENSOR_SENSITIVITY));result.put("exposureNs",captureResult.get(CaptureResult.SENSOR_EXPOSURE_TIME));
         if(requestedWb==-1){result.put("requestedKelvin",requestedKelvin);if(Build.VERSION.SDK_INT>=36){result.put("actualKelvin",captureResult.get(CaptureResult.COLOR_CORRECTION_COLOR_TEMPERATURE));result.put("actualColorMode",captureResult.get(CaptureResult.COLOR_CORRECTION_MODE));}}
-        File partial=new File(dir,captureId+".tmp"),manifest=new File(dir,captureId+".json");try(FileOutputStream out=new FileOutputStream(partial)){out.write(result.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));out.getFD().sync();}if(!partial.renameTo(manifest))throw new IOException("Could not commit capture manifest");
+        GalleryWriter.writeManifest(this,result);
+        // Album failure is recoverable and must not discard the staged capture.
+        GalleryWriter.publish(this,result);
         busy=false;runOnUiThread(()->{setResult(RESULT_OK,new Intent().putExtra("id",captureId));finish();});
     }catch(Exception e){fail("Capture could not be completed: "+e.getMessage(),"未能完成拍摄："+e.getMessage());}}
     private JSONObject fileInfo(File file,String mime)throws Exception {if(file.length()>52L*1024*1024)throw new IOException("Image exceeds notebook size limit");JSONObject f=new JSONObject();f.put("path",file.getAbsolutePath());f.put("name","Scout-"+captureId+(mime.equals("image/jpeg")?".jpg":".dng"));f.put("mime",mime);return f;}
