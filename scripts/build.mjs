@@ -1,0 +1,16 @@
+import {build} from 'esbuild';
+import {mkdir,readFile,writeFile,copyFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+const root=fileURLToPath(new URL('..',import.meta.url));
+await build({entryPoints:[path.join(root,'src/app.js')],bundle:true,format:'esm',target:['es2022'],outfile:path.join(root,'app.js'),minify:true,legalComments:'eof'});
+const files=['index.html','app.js','styles.css','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
+const hash=createHash('sha256');
+for(const file of files)hash.update(await readFile(path.join(root,file)));
+const version=hash.digest('hex').slice(0,16);
+const source=await readFile(path.join(root,'src/sw-template.js'),'utf8');
+await writeFile(path.join(root,'sw.js'),source.replace('__CACHE_VERSION__',version).replace('__CACHE_FILES__',JSON.stringify(files.map(f=>'./'+f))));
+await mkdir(path.join(root,'web'),{recursive:true});
+for(const file of [...files,'sw.js'])await copyFile(path.join(root,file),path.join(root,'web',file));
+console.log('Built offline web app '+version+' and Capacitor web assets.');

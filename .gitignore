@@ -1,0 +1,11 @@
+node_modules/
+web/
+test-results/
+.tools/
+*.log
+android/.gradle/
+android/local.properties
+android/**/build/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor*.json
+android/capacitor-cordova-android-plugins/

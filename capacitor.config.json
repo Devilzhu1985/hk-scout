@@ -1,0 +1,5 @@
+{
+  "appId": "com.hkscout.field", "appName": "Scout", "webDir": "web",
+  "android": { "allowMixedContent": false },
+  "plugins": { "SplashScreen": { "launchShowDuration": 0 } }
+}
