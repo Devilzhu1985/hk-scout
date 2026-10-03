@@ -1,0 +1,16 @@
+{
+  "name": "香港取景记录",
+  "short_name": "取景记录",
+  "description": "环境美术取景与光照测量现场记录工具",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f5f2",
+  "theme_color": "#1f2328",
+  "lang": "zh-Hans",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

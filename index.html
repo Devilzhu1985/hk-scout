@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f2328">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="取景记录">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>香港取景记录</title>
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#1f2328;--sub:#646b78;--line:#e3e1db;--red:#c4382b;--redS:#fbeeea;--blue:#2a6f97;--blueS:#e8f1f7;--ok:#2f7d4f;--okS:#e7f4ec;--amber:#b7791f;--amberS:#fdf3e1}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:10;background:#1f2328;color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;display:flex;align-items:center;gap:10px}
+header h1{font-size:17px;margin:0;flex:1}
+header .clock{font-size:13px;color:#c9ccd1;text-align:right;line-height:1.3}
+main{max-width:720px;margin:0 auto;padding:12px}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+.tabbar button{flex:1;border:0;background:none;padding:8px 0 7px;font-size:12px;color:var(--sub);display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabbar button .i{font-size:19px;line-height:1}
+.tabbar button.on{color:var(--red);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.card h3{margin:0 0 8px;font-size:15px}
+h2.sec{font-size:15px;margin:18px 2px 8px;color:var(--sub);font-weight:600}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.sub{color:var(--sub);font-size:13px}
+.tiny{color:var(--sub);font-size:12px}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:9px 13px;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block;font-family:inherit}
+.btn.pri{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
+.btn.blue{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--blue)}
+.btn.danger{color:var(--red);border-color:#efc8c2}
+.btn.block{width:100%;display:block}
+.btn:active{transform:scale(.98)}
+input[type=text],input[type=number],input[type=date],input:not([type]),select,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:16px;background:#fff;color:var(--ink);font-family:inherit}
+textarea{min-height:80px;resize:vertical}
+label.f{display:block;font-size:13px;color:var(--sub);margin:8px 0 4px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:16px;padding:6px 12px;font-size:14px;color:var(--ink)}
+.chip.on{background:var(--red);border-color:var(--red);color:#fff}
+.seg{display:flex;background:#ecebe6;border-radius:10px;padding:3px;gap:3px;margin-bottom:10px}
+.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:7px 4px;font-size:13px;color:var(--sub)}
+.seg button.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #f0eee9}
+.chk:last-child{border-bottom:0}
+.chk input[type=checkbox]{width:22px;height:22px;margin:1px 0 0;accent-color:var(--red);flex:none}
+.chk .t{font-weight:500}
+.chk.done .t{color:#9aa0a8;text-decoration:line-through}
+.badge{display:inline-block;font-size:11px;padding:1px 7px;border-radius:9px;background:var(--redS);color:var(--red);vertical-align:1px}
+.badge.b{background:var(--blueS);color:var(--blue)}
+.badge.g{background:var(--okS);color:var(--ok)}
+.badge.a{background:var(--amberS);color:var(--amber)}
+.tip{background:var(--blueS);border-left:4px solid var(--blue);padding:9px 12px;border-radius:8px;font-size:13px;margin:8px 0}
+.warn{background:var(--redS);border-left:4px solid var(--red);padding:9px 12px;border-radius:8px;font-size:13px;margin:8px 0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
+.kv b{font-weight:600}
+.big{font-size:22px;font-weight:700}
+.sunbar{position:relative;height:26px;border-radius:7px;overflow:hidden;background:#eee;margin:8px 0 4px}
+.sunbar div{position:absolute;top:0;bottom:0}
+.sunbar .now{width:2px;background:#000}
+.pt{display:flex;gap:10px;align-items:center}
+.pt .code{font-weight:700;font-size:15px;min-width:64px}
+.prog{height:5px;background:#eee;border-radius:3px;overflow:hidden;margin-top:5px}
+.prog div{height:100%;background:var(--ok)}
+.thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.thumbs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:7px;border:1px solid var(--line)}
+.out{background:#f3f2ee;border-radius:9px;padding:9px 11px;font-size:14px;margin-top:8px}
+.out .v{font-weight:700;font-size:17px}
+.namebtns{display:grid;grid-template-columns:1fr;gap:6px}
+.namebtns button{text-align:left;font-family:Consolas,Menlo,monospace;font-size:12.5px;padding:8px 10px;border:1px solid var(--line);background:#fff;border-radius:8px;color:var(--ink);display:flex;justify-content:space-between;gap:8px;word-break:break-all}
+.namebtns button span.l{color:var(--sub);font-family:inherit;flex:none}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{border-bottom:1px solid #eee;padding:6px 4px;text-align:left}
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(31,35,40,.92);color:#fff;padding:9px 16px;border-radius:20px;font-size:14px;z-index:50;max-width:90%;text-align:center;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+.modal img{max-width:100%;max-height:75vh;border-radius:8px}
+.modal .row{margin-top:12px}
+.colorrow{border:1px solid var(--line);border-radius:10px;padding:8px;margin-top:8px}
+.swatch{width:36px;height:36px;border-radius:8px;border:1px solid var(--line);flex:none}
+.step{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f0eee9;align-items:flex-start}
+.step:last-child{border-bottom:0}
+.step .n{width:26px;height:26px;border-radius:50%;background:#e7e5df;color:var(--sub);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+.step.on .n{background:var(--ok);color:#fff}
+.step.opt .t::after{content:" 可选";font-size:11px;color:var(--amber)}
+.step.skip{opacity:.4}
+.empty{text-align:center;color:var(--sub);padding:30px 10px}
+canvas#gcCanvas{width:100%;border-radius:8px;touch-action:manipulation;display:block}
+.hide{display:none!important}
+.backbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="hTitle">香港取景记录</h1>
+  <div class="clock" id="hClock"></div>
+</header>
+<main id="app"></main>
+<nav class="tabbar" id="tabbar">
+  <button data-tab="today"><span class="i">☀</span>今日</button>
+  <button data-tab="places"><span class="i">⌖</span>地点</button>
+  <button data-tab="log"><span class="i">✎</span>记录</button>
+  <button data-tab="tools"><span class="i">⚙</span>工具</button>
+  <button data-tab="wrap"><span class="i">⇪</span>收工</button>
+</nav>
+<div class="toast" id="toast"></div>
+<input type="file" id="photoInput" accept="image/*" capture="environment" class="hide">
+<input type="file" id="gcInput" accept="image/*" class="hide">
+<input type="file" id="importInput" accept="application/json,.json" class="hide">
+
+<script>
+'use strict';
+/* ========== 基础数据 ========== */
+const HK = {lat: 22.302, lng: 114.177};
+const AREAS = [['KC','九龙城'],['SSP','深水埗'],['MK','旺角'],['YMT','油麻地/佐敦'],['TST','尖沙咀'],['CEN','中环'],['SW','上环/西营盘'],['KT','坚尼地城/石塘咀'],['QB','鲗鱼涌'],['WC','湾仔'],['IND','工业区'],['PORT','码头/基建'],['EST','屋邨'],['OTH','其他']];
+const AREA_NAME = Object.fromEntries(AREAS);
+const TYPES = [['Env','环境'],['Gray','灰卡/灰球'],['Chrome','铬球'],['Bkt','包围曝光'],['Tex','材质'],['Sig','招牌'],['Pano','全景'],['Aud','录音']];
+const WEATHER = ['晴','多云','阴','小雨','大雨','刚下过雨','雾/霾'];
+const GROUND = ['干','潮湿','积水'];
+const LIGHTS = ['天光','钠灯','暖白LED','冷白LED','日光灯管','霓虹','LED屏','店内光','车灯'];
+const FEELS = ['偏暖','中性','偏冷','偏青绿','偏品红','饱和单色'];
+const STEPS = [
+  {t:'定位与登记', d:'拍带环境的定位照；记地点、时间、天气、主光源'},
+  {t:'环境广角', d:'1.5 m 高度，前后左右 4 张 + 1 张仰拍；有高处加拍俯视'},
+  {t:'固定相机参数', d:'ISO 100–400（夜景 ≤800），白平衡锁定，对灰卡测光，记快门/ISO'},
+  {t:'灰卡 / 灰球 / 铬球', d:'放在代表性位置、面朝主光源；同参数各拍一张；多种光源各拍一张灰卡'},
+  {t:'亮度测量', d:'传感器朝光来的方向，1.5 m 高，读数稳定 3 秒；测 A 最亮 / B 街道 / C 最暗 / D 店内'},
+  {t:'包围曝光', d:'固定机位 -2 / 0 / +2 EV，夜景加 -3 / +3'},
+  {t:'材质与招牌专拍', d:'墙面/地面/铁闸正对平拍，角落放灰卡；招牌正面、侧面、夜景；近拍霓虹降 1–2 档', opt:true},
+  {t:'全景与声音', d:'全景模式匀速转一圈；录 30 秒环境音', opt:true}
+];
+const CATS = {A:'城寨基因：高密度、叠加、临时搭建', B:'招牌、霓虹与街道层次', C:'垂直感与竹棚架', D:'工业、基建与粗粝面', E:'食肆与室内（做店铺用）'};
+const PLACES = [
+  {id:'kc_park',cat:'A',area:'KC',n:'九龙寨城公园',d:'衙门、南门遗迹、展览模型与老照片；建立尺度感，建议第一站',q:'九龍寨城公園'},
+  {id:'kc_streets',cat:'A',area:'KC',n:'马头围道 / 木匠道 / 龙岗道一带',d:'60–80 年代唐楼、乱线、外露水管、天台加建、窄巷',q:'龍崗道 九龍城'},
+  {id:'ssp_apliu',cat:'A',area:'SSP',n:'鸭寮街',d:'电子零件摊、地摊、招牌和电线叠层',q:'鴨寮街'},
+  {id:'ssp_peiho',cat:'A',area:'SSP',n:'北河街',d:'街市、旧店面、地面层杂物',q:'北河街 深水埗'},
+  {id:'ssp_fukwing',cat:'A',area:'SSP',n:'福荣街',d:'玩具批发、货品堆叠、铁闸',q:'福榮街'},
+  {id:'ssp_csw',cat:'A',area:'SSP',n:'长沙湾道',d:'布料与五金铺、唐楼立面',q:'長沙灣道 深水埗'},
+  {id:'tst_ckm',cat:'A',area:'TST',n:'重庆大厦',d:'垂直微型城市，走廊窄、明暗对比强；拍摄请低调',q:'重慶大廈'},
+  {id:'qb_monster',cat:'A',area:'QB',n:'益昌大厦 / 怡景楼（怪兽大厦）',d:'围合式立面、环形天井的压迫感',q:'益昌大廈'},
+  {id:'mk_sys',cat:'B',area:'MK',n:'西洋菜南街',d:'悬挑招牌、霓虹、LED、层叠店面',q:'西洋菜南街'},
+  {id:'mk_nathan',cat:'B',area:'MK',n:'弥敦道（旺角段）',d:'主干道招牌密度与车流光',q:'彌敦道 旺角'},
+  {id:'mk_argyle',cat:'B',area:'MK',n:'亚皆老街',d:'路口招牌、天桥、人流',q:'亞皆老街 旺角'},
+  {id:'mk_ladies',cat:'B',area:'MK',n:'通菜街（女人街）',d:'摊档棚架、挂货、夜市灯',q:'女人街'},
+  {id:'mk_fayuen',cat:'B',area:'MK',n:'花园街',d:'街市摊位、帆布棚、唐楼',q:'花園街 旺角'},
+  {id:'ymt_temple',cat:'B',area:'YMT',n:'庙街',d:'夜市、大排档、灯泡串',q:'廟街'},
+  {id:'ymt_shanghai',cat:'B',area:'YMT',n:'上海街',d:'旧店面、厨具与神料店',q:'上海街 油麻地'},
+  {id:'ymt_reclamation',cat:'B',area:'YMT',n:'新填地街',d:'果栏一带、旧店铺',q:'新填地街'},
+  {id:'ymt_jade',cat:'B',area:'YMT',n:'玉器市场',d:'摊位与室内市场照明',q:'玉器市場 油麻地'},
+  {id:'ymt_tinhau',cat:'B',area:'YMT',n:'油麻地天后庙',d:'庙宇、香火、榕树广场',q:'油麻地天后廟'},
+  {id:'wc_johnston',cat:'B',area:'WC',n:'庄士敦道',d:'电车、唐楼骑楼、新旧混合',q:'莊士敦道'},
+  {id:'wc_taiyuen',cat:'B',area:'WC',n:'太原街',d:'玩具街摊档、窄街',q:'太原街 灣仔'},
+  {id:'wc_bluehouse',cat:'B',area:'WC',n:'蓝屋建筑群',d:'保育唐楼、木楼梯、外廊',q:'藍屋 灣仔'},
+  {id:'cen_graham',cat:'C',area:'CEN',n:'嘉咸街街市',d:'坡地街市、摊位帆布与照明',q:'嘉咸街'},
+  {id:'sw_ladder',cat:'C',area:'SW',n:'楼梯街',d:'花岗岩台阶街、坡地层次',q:'樓梯街'},
+  {id:'sw_taipingshan',cat:'C',area:'SW',n:'太平山街',d:'小庙、旧街、坡地住宅',q:'太平山街'},
+  {id:'sw_hollywood',cat:'C',area:'SW',n:'荷李活道',d:'古董店、旧建筑、坡道',q:'荷李活道'},
+  {id:'sw_manmo',cat:'C',area:'SW',n:'文武庙',d:'盘香、室内烟雾与光束',q:'文武廟 上環'},
+  {id:'cen_escalator',cat:'C',area:'CEN',n:'中环至半山自动扶梯',d:'穿行于楼宇间的垂直通道',q:'中環至半山自動扶梯'},
+  {id:'kt_kt',cat:'C',area:'KT',n:'坚尼地城',d:'竹棚架、住宅密度、海边',q:'堅尼地城'},
+  {id:'kt_stt',cat:'C',area:'KT',n:'石塘咀',d:'旧唐楼、坡道、竹棚',q:'石塘咀'},
+  {id:'any_bamboo',cat:'C',area:'OTH',n:'施工中的工地（竹棚 + 绿网）',d:'随遇随拍，多角度',q:''},
+  {id:'ind_kt',cat:'D',area:'IND',n:'观塘工业区',d:'工业大厦、货装区、铁闸、工厂楼梯间',q:'觀塘 工業大廈'},
+  {id:'ind_kb',cat:'D',area:'IND',n:'九龙湾工业区',d:'货车、装卸平台',q:'九龍灣 工業'},
+  {id:'ind_fotan',cat:'D',area:'IND',n:'火炭工业区',d:'工厂大厦、走廊',q:'火炭 工業'},
+  {id:'ind_csw',cat:'D',area:'IND',n:'长沙湾工业区',d:'工业大厦、批发',q:'長沙灣 工業'},
+  {id:'port_kwaichung',cat:'D',area:'PORT',n:'葵涌货柜码头一带',d:'巨型吊机、货柜、高架路',q:'葵涌貨櫃碼頭'},
+  {id:'est_choihung',cat:'D',area:'EST',n:'彩虹邨',d:'色块、重复性、模块化',q:'彩虹邨'},
+  {id:'est_skm',cat:'D',area:'EST',n:'石硖尾邨',d:'旧公屋、外廊',q:'石硤尾邨'},
+  {id:'any_flyover',cat:'D',area:'OTH',n:'天桥 / 行人天桥 / 地下通道',d:'混凝土风化、街道设施',q:''},
+  {id:'food_mido',cat:'E',area:'YMT',n:'美都餐室',d:'柜台、卡位、瓷砖、餐牌；营业状态出发前确认',q:'美都餐室'},
+  {id:'food_kamwah',cat:'E',area:'MK',n:'金华冰厅',d:'冰室内景、柜台；营业状态出发前确认',q:'金華冰廳'},
+  {id:'food_lanfong',cat:'E',area:'CEN',n:'兰芳园',d:'大牌档式铺面、奶茶档',q:'蘭芳園 中環'},
+  {id:'ssp_food',cat:'E',area:'SSP',n:'北河街街市熟食中心',d:'熟食档、棚顶照明、桌椅',q:'北河街街市'},
+  {id:'cen_stanley',cat:'E',area:'CEN',n:'士丹利街一带大排档',d:'铁皮档、炉灶、帆布',q:'士丹利街'},
+  {id:'kc_market',cat:'E',area:'KC',n:'九龙城街市',d:'摊位结构、挂钩、排水、照明',q:'九龍城街市'},
+  {id:'syp_market',cat:'E',area:'SW',n:'西营盘街市',d:'旧街市建筑与摊位',q:'西營盤街市'}
+];
+const DAYS = [
+  {t:'第 1 天 · 寨城与基层街区', slots:[['白天',['kc_park','kc_streets','kc_market']],['傍晚',['ssp_apliu','ssp_peiho','ssp_fukwing','ssp_csw']],['夜晚',['ssp_food','ssp_apliu']]]},
+  {t:'第 2 天 · 招牌与垂直密度', slots:[['白天',['ymt_shanghai','ymt_reclamation','ymt_jade','ymt_tinhau','food_mido','tst_ckm']],['傍晚',['mk_sys','mk_argyle','mk_fayuen','mk_nathan']],['夜晚',['mk_ladies','food_kamwah','ymt_temple']]]},
+  {t:'第 3 天 · 坡地、竹棚与怪兽楼', slots:[['白天',['cen_graham','sw_ladder','sw_taipingshan','sw_hollywood','sw_manmo','cen_escalator','food_lanfong','cen_stanley','syp_market','kt_kt','kt_stt']],['傍晚',['qb_monster']],['夜晚',['wc_johnston','wc_taiyuen','wc_bluehouse']]]},
+  {t:'机动备选', slots:[['有空就补',['ind_kt','ind_kb','ind_fotan','ind_csw','port_kwaichung','est_choihung','est_skm','any_bamboo','any_flyover']]]}
+];
+const GEAR = ['手机（支持 RAW / 手动模式）','18% 灰卡（A5，可折叠）','小号灰球 + 铬球','充电宝 + 线','迷你三脚架 / 手机夹','相机主机（如有）','防雨罩 / 雨伞','测光 App 已安装（Lux Light Meter / Light Meter）'];
+const SETUP = ['关闭 HDR 自动合成、美颜、夜景增强、AI 优化','拍摄格式设为 RAW（或最高质量）','开启网格线与水平仪','开启照片定位信息','白平衡手动锁定（与本工具设置一致）'];
+const WRAP = ['导出备份（JSON）并发到电脑 / 云盘','照片同步到电脑或云端，至少两份','按命名规则批量改名','补全记录表、写备注','每个点位标出最能代表这里光的一张','查缺：哪些点位缺灰卡 / 夜景，明天补','清理手机存储空间','充电：手机、充电宝、相机电池'];
+const LUX_REF = [['晴天直射阳光','约 100,000'],['阴天室外','约 10,000–20,000'],['亮灯店铺内','约 300–1,000'],['繁华街道夜晚（有招牌光）','约 50–300'],['普通街灯下','约 10–30'],['暗巷','< 5']];
+const PLACE_BY_ID = Object.fromEntries(PLACES.map(p => [p.id, p]));
+
+/* ========== 状态 ========== */
+const KEY = 'hkscout_v1';
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+function fresh(){ return {v:1, settings:{wb:'5500', iso:'400', fnum:'1.8', tripStart:''}, placeState:{}, customPlaces:[], points:[], checks:{}, quick:false}; }
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.v) return Object.assign(fresh(), s); }catch(e){}
+  return fresh();
+}
+let S = load();
+let saveTimer = null;
+function save(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 250); }
+function saveNow(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ toast('保存失败：存储空间不足'); } }
+window.addEventListener('pagehide', saveNow);
+document.addEventListener('visibilitychange', () => { if(document.hidden) saveNow(); });
+
+const allPlaces = () => PLACES.concat(S.customPlaces);
+const placeById = id => PLACE_BY_ID[id] || S.customPlaces.find(p => p.id === id);
+const pstate = id => (S.placeState[id] = S.placeState[id] || {done:false, note:''});
+
+/* ========== 工具函数 ========== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2, '0');
+const HKF = new Intl.DateTimeFormat('en-GB', {timeZone:'Asia/Hong_Kong', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, weekday:'short'});
+function hk(t){ const o = {}; HKF.formatToParts(new Date(t)).forEach(p => o[p.type] = p.value); if(o.hour === '24') o.hour = '00'; return o; }
+const hkHM = t => { const o = hk(t); return o.hour + ':' + o.minute; };
+const hkDate = t => { const o = hk(t); return o.year + '-' + o.month + '-' + o.day; };
+const hkMD = t => { const o = hk(t); return o.month + o.day; };
+const hkHMc = t => { const o = hk(t); return o.hour + o.minute; };
+const num = v => { const n = parseFloat(String(v).replace(/,/g, '')); return isFinite(n) ? n : null; };
+const log2 = Math.log2;
+const fmt = (n, d = 1) => n == null || !isFinite(n) ? '—' : (Math.abs(n) >= 100 ? Math.round(n).toLocaleString() : n.toFixed(d).replace(/\.0+$/, ''));
+function parseShutter(s){
+  s = String(s || '').trim().replace(/s$/i, '').replace(/"$/, '');
+  if(!s) return null;
+  if(s.includes('/')){ const [a, b] = s.split('/').map(Number); return a > 0 && b > 0 ? a / b : null; }
+  const n = Number(s); return n > 0 ? n : null;
+}
+function ev100FromExposure(t, iso, N){ if(!t || !iso || !N) return null; return log2(N * N / t) - log2(iso / 100); }
+const luxToEv = lux => lux > 0 ? log2(lux / 2.5) : null;
+const evToLux = ev => 2.5 * Math.pow(2, ev);
+let toastTimer;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 1800); }
+async function copy(text){
+  try{ await navigator.clipboard.writeText(text); }
+  catch(e){ const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(_){} ta.remove(); }
+  toast('已复制：' + text);
+}
+const mapUrl = q => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q + ' 香港');
+async function shareOrDownload(name, blob){
+  try{
+    const f = new File([blob], name, {type: blob.type || 'application/octet-stream'});
+    if(navigator.canShare && navigator.canShare({files:[f]})){ await navigator.share({files:[f], title:name}); return; }
+  }catch(e){ if(e && e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+
+/* ========== 太阳时间（日出日落方程，精度约 1–2 分钟）========== */
+function sunTimes(dateStr, lat = HK.lat, lng = HK.lng){
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const rad = Math.PI / 180, jdToMs = j => (j - 2440587.5) * 86400000;
+  const JD = Date.UTC(y, m - 1, d, 4, 0, 0) / 86400000 + 2440587.5;
+  const n = Math.ceil(JD - 2451545.0 + 0.0008);
+  const Js = n - lng / 360;
+  const M = ((357.5291 + 0.98560028 * Js) % 360 + 360) % 360;
+  const C = 1.9148 * Math.sin(M * rad) + 0.02 * Math.sin(2 * M * rad) + 0.0003 * Math.sin(3 * M * rad);
+  const L = (M + C + 180 + 102.9372) % 360;
+  const Jt = 2451545.0 + Js + 0.0053 * Math.sin(M * rad) - 0.0069 * Math.sin(2 * L * rad);
+  const sinD = Math.sin(L * rad) * Math.sin(23.4397 * rad), cosD = Math.cos(Math.asin(sinD));
+  const at = h => { const c = (Math.sin(h * rad) - Math.sin(lat * rad) * sinD) / (Math.cos(lat * rad) * cosD); if(c < -1 || c > 1) return null; const w = Math.acos(c) / rad; return {am: jdToMs(Jt - w / 360), pm: jdToMs(Jt + w / 360)}; };
+  return {noon: jdToMs(Jt), g6: at(6), sun: at(-0.833), b4: at(-4), b8: at(-8)};
+}
+
+/* ========== 照片存储（IndexedDB）========== */
+const DB = {
+  db: null,
+  open(){ return this.db ? Promise.resolve() : new Promise((res, rej) => { const r = indexedDB.open('hkscout', 1); r.onupgradeneeded = () => r.result.createObjectStore('photos', {keyPath:'id'}); r.onsuccess = () => { this.db = r.result; res(); }; r.onerror = () => rej(r.error); }); },
+  tx(mode, fn){ return this.open().then(() => new Promise((res, rej) => { const t = this.db.transaction('photos', mode); const st = t.objectStore('photos'); const r = fn(st); t.oncomplete = () => res(r && r.result); t.onerror = () => rej(t.error); })); },
+  put(o){ return this.tx('readwrite', s => s.put(o)); },
+  get(id){ return this.tx('readonly', s => s.get(id)); },
+  del(id){ return this.tx('readwrite', s => s.delete(id)); },
+  all(){ return this.tx('readonly', s => s.getAll()); }
+};
+const urlCache = {};
+async function photoUrl(id){ if(urlCache[id]) return urlCache[id]; const o = await DB.get(id); if(!o) return ''; return (urlCache[id] = URL.createObjectURL(o.blob)); }
+function loadImage(file){ return new Promise((res, rej) => { const u = URL.createObjectURL(file); const img = new Image(); img.onload = () => res({img, u}); img.onerror = () => { URL.revokeObjectURL(u); rej(new Error('图片无法读取')); }; img.src = u; }); }
+async function compress(file, max = 1600, q = 0.82){
+  const {img, u} = await loadImage(file);
+  const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+  const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
+  return new Promise(r => c.toBlob(r, 'image/jpeg', q));
+}
+const blobToDataUrl = b => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(b); });
+const dataUrlToBlob = async d => (await fetch(d)).blob();
+
+/* ========== 点位逻辑 ========== */
+function newPoint(area, place, placeId){
+  area = area || 'OTH';
+  const seq = S.points.filter(p => p.area === area).reduce((m, p) => Math.max(m, p.seqNo || 0), 0) + 1;
+  const p = {id: uid(), area, seqNo: seq, code: area + '-' + pad(seq), place: place || '', placeId: placeId || '', tag: '', t: Date.now(),
+    lat: null, lng: null, acc: null, weather: [], ground: '', lights: [], shutter: '', iso: S.settings.iso || '', lux: {A:'', B:'', C:'', D:''},
+    colors: [], steps: {}, notes: '', photos: [], seq: {}};
+  S.points.unshift(p); save();
+  if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  return p;
+}
+const getPoint = id => S.points.find(p => p.id === id);
+function fileBase(p){ return [p.area, (p.tag || '').replace(/[^A-Za-z0-9-]/g, '') || ('P' + pad(p.seqNo)), hkMD(p.t), hkHMc(p.t)].join('_'); }
+function nextName(p, type){ return fileBase(p) + '_' + type + '_' + pad((p.seq[type] || 0) + 1); }
+function luxCalc(p){
+  const A = num(p.lux.A), B = num(p.lux.B), C = num(p.lux.C), D = num(p.lux.D);
+  const r = {A, B, C, D};
+  if(C > 0){ r.ratio = [A, B].map(v => v > 0 ? fmt(v / C, 1) : '—').concat('1').join(' : '); }
+  if(A > 0 && C > 0) r.evAC = log2(A / C);
+  if(B > 0 && C > 0) r.evBC = log2(B / C);
+  if(A > 0 && B > 0) r.evAB = log2(A / B);
+  if(D > 0 && B > 0) r.evDB = log2(D / B);
+  return r;
+}
+function stepsDone(p){ return STEPS.filter((s, i) => p.steps[i]).length; }
+function stepsNeed(){ return S.quick ? STEPS.filter(s => !s.opt).length : STEPS.length; }
+
+/* ========== 路由 ========== */
+let tab = 'today', editing = null, dayIdx = 0, placeFilter = 'all', toolSeg = 'calc';
+function go(t, opt){ tab = t; editing = opt && opt.edit || null; render(); window.scrollTo(0, 0); }
+$('#tabbar').addEventListener('click', e => { const b = e.target.closest('button'); if(b) go(b.dataset.tab); });
+
+function render(){
+  document.querySelectorAll('#tabbar button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  const app = $('#app');
+  if(tab === 'today') app.innerHTML = vToday();
+  else if(tab === 'places') app.innerHTML = vPlaces();
+  else if(tab === 'log') app.innerHTML = editing ? vEditor(getPoint(editing)) : vLog();
+  else if(tab === 'tools') app.innerHTML = vTools();
+  else if(tab === 'wrap') app.innerHTML = vWrap();
+  afterRender();
+}
+function afterRender(){
+  if(tab === 'log' && editing){ updateComputed(); loadThumbs(); }
+  if(tab === 'log' && !editing) loadListThumbs();
+  if(tab === 'tools' && toolSeg === 'gc') drawGc();
+  if(tab === 'tools' && toolSeg === 'calc') calcExp();
+  if(tab === 'wrap') showUsage();
+}
+
+/* ========== 视图：今日 ========== */
+function sunCard(){
+  const today = hkDate(Date.now()), st = sunTimes(today), now = Date.now();
+  if(!st.sun) return '';
+  const ev = [
+    ['日出', st.sun.am], ['黄金时段开始', st.g6 && st.g6.pm], ['日落', st.sun.pm], ['蓝调开始', st.b4 && st.b4.pm], ['蓝调结束（入夜）', st.b8 && st.b8.pm]
+  ].filter(x => x[1]);
+  const next = ev.find(x => x[1] > now);
+  let nextTxt = '今天的光线窗口已过，晚上以人工光为主';
+  if(next){ const m = Math.round((next[1] - now) / 60000); nextTxt = `距 <b>${next[0]}</b> 还有 <b>${m >= 60 ? Math.floor(m / 60) + ' 小时 ' + (m % 60) + ' 分' : m + ' 分钟'}</b>`; }
+  // 时间条 06:00–21:00
+  const d0 = Date.parse(today + 'T06:00:00+08:00'), d1 = Date.parse(today + 'T21:00:00+08:00');
+  const x = t => Math.max(0, Math.min(100, (t - d0) / (d1 - d0) * 100));
+  const seg = (a, b, c) => `<div style="left:${x(a)}%;width:${x(b) - x(a)}%;background:${c}"></div>`;
+  let bar = seg(d0, d1, '#cfd8e3');
+  bar += seg(st.sun.am, st.sun.pm, '#fbe7a1');
+  if(st.g6) bar += seg(st.g6.pm, st.sun.pm, '#f4b45d');
+  if(st.b4 && st.b8) bar += seg(st.b4.pm, st.b8.pm, '#5b7fbf');
+  if(st.b8) bar += seg(st.b8.pm, d1, '#2b3550');
+  if(now > d0 && now < d1) bar += `<div class="now" style="left:${x(now)}%"></div>`;
+  return `<div class="card"><h3>今日光线窗口 <span class="tiny">（香港 · ${today}）</span></h3>
+    <div class="sub">${nextTxt}</div>
+    <div class="sunbar">${bar}</div>
+    <div class="row tiny" style="justify-content:space-between"><span>06:00</span><span>12:00</span><span>18:00</span><span>21:00</span></div>
+    <div class="kv" style="margin-top:8px">
+      <span>日出</span><b>${hkHM(st.sun.am)}</b>
+      ${st.g6 ? `<span>黄金时段</span><b>${hkHM(st.g6.pm)} – ${hkHM(st.sun.pm)}</b>` : ''}
+      <span>日落</span><b>${hkHM(st.sun.pm)}</b>
+      ${st.b4 && st.b8 ? `<span>蓝调</span><b>${hkHM(st.b4.pm)} – ${hkHM(st.b8.pm)}</b>` : ''}
+    </div>
+    <div class="tiny" style="margin-top:6px">按太阳高度角计算（黄金 +6°~日落，蓝调 −4°~−8°），高楼遮挡会让街面更早变暗，以现场为准。</div></div>`;
+}
+function placeRow(p, opts = {}){
+  const s = pstate(p.id), cnt = S.points.filter(x => x.placeId === p.id).length;
+  return `<div class="chk ${s.done ? 'done' : ''}">
+    <input type="checkbox" data-act="pdone" data-id="${p.id}" ${s.done ? 'checked' : ''}>
+    <div class="grow">
+      <div class="t">${esc(p.n)} ${cnt ? `<span class="badge g">${cnt} 个点位</span>` : ''} ${p.custom ? '<span class="badge a">自定义</span>' : ''}</div>
+      <div class="tiny">${esc(p.d || '')}</div>
+      ${s.note ? `<div class="tiny" style="color:var(--blue)">备注：${esc(s.note)}</div>` : ''}
+      <div class="row" style="margin-top:6px">
+        <button class="btn sm pri" data-act="pnew" data-id="${p.id}">＋ 记录点位</button>
+        ${p.q ? `<a class="btn sm" href="${mapUrl(p.q)}" target="_blank" rel="noopener">地图</a>` : ''}
+        <button class="btn sm ghost" data-act="pnote" data-id="${p.id}">备注</button>
+        ${p.custom && opts.del ? `<button class="btn sm ghost" data-act="pdel" data-id="${p.id}" style="color:var(--red)">删除</button>` : ''}
+      </div>
+    </div></div>`;
+}
+function vToday(){
+  const today = hkDate(Date.now());
+  const todays = S.points.filter(p => hkDate(p.t) === today);
+  let dayHint = '';
+  if(S.settings.tripStart){
+    const diff = Math.round((Date.parse(today) - Date.parse(S.settings.tripStart)) / 86400000);
+    if(diff >= 0 && diff < 3 && dayIdx === null) dayIdx = diff;
+    dayHint = diff >= 0 ? `行程第 ${diff + 1} 天` : `距出发还有 ${-diff} 天`;
+  }
+  if(dayIdx === null) dayIdx = 0;
+  const d = DAYS[dayIdx] || DAYS[0];
+  const doneCnt = PLACES.filter(p => pstate(p.id).done).length;
+  return `${sunCard()}
+  <div class="card"><div class="row">
+    <div class="grow"><div class="tiny">今日点位</div><div class="big">${todays.length}</div></div>
+    <div class="grow"><div class="tiny">地点完成</div><div class="big">${doneCnt}<span class="sub"> / ${PLACES.length}</span></div></div>
+    <div class="grow"><div class="tiny">${dayHint || '设置出发日期'}</div><button class="btn sm" data-act="goTools">设置</button></div>
+  </div>
+  <button class="btn pri block" style="margin-top:10px" data-act="quickNew">＋ 快速新建点位</button></div>
+  <div class="seg">${DAYS.map((x, i) => `<button class="${i === dayIdx ? 'on' : ''}" data-act="day" data-i="${i}">${i < 3 ? '第 ' + (i + 1) + ' 天' : '备选'}</button>`).join('')}</div>
+  <div class="card"><h3>${d.t}</h3>
+  ${d.slots.map(([slot, ids]) => `<div style="margin-top:6px"><span class="badge ${slot === '夜晚' ? 'b' : slot === '傍晚' ? 'a' : ''}">${slot}</span>${ids.map(id => placeRow(PLACE_BY_ID[id])).join('')}</div>`).join('')}
+  </div>
+  <div class="tip">核心原则：记比例不记绝对值；同一机位多时段；每次都带灰卡入镜；白平衡全程固定为 <b>${esc(S.settings.wb)}K</b>。</div>`;
+}
+
+/* ========== 视图：地点 ========== */
+function vPlaces(){
+  const list = allPlaces();
+  const filt = p => placeFilter === 'all' || (placeFilter === 'todo' ? !pstate(p.id).done : pstate(p.id).done);
+  const cats = Object.keys(CATS).map(c => {
+    const items = list.filter(p => p.cat === c && filt(p));
+    if(!items.length) return '';
+    return `<h2 class="sec">${c} · ${CATS[c]}</h2><div class="card">${items.map(p => placeRow(p, {del:true})).join('')}</div>`;
+  }).join('');
+  const custom = list.filter(p => p.cat === 'X' && filt(p));
+  return `<div class="seg">
+    <button class="${placeFilter === 'all' ? 'on' : ''}" data-act="pf" data-v="all">全部</button>
+    <button class="${placeFilter === 'todo' ? 'on' : ''}" data-act="pf" data-v="todo">未去</button>
+    <button class="${placeFilter === 'done' ? 'on' : ''}" data-act="pf" data-v="done">已完成</button></div>
+  ${cats}
+  ${custom.length ? `<h2 class="sec">X · 自定义地点</h2><div class="card">${custom.map(p => placeRow(p, {del:true})).join('')}</div>` : ''}
+  <h2 class="sec">添加现场发现的地点</h2>
+  <div class="card">
+    <label class="f">名称</label><input id="cpName" placeholder="例：某某街后巷">
+    <label class="f">区域</label><select id="cpArea">${AREAS.map(([k, v]) => `<option value="${k}">${k} · ${v}</option>`).join('')}</select>
+    <label class="f">要拍什么（可选）</label><input id="cpDesc" placeholder="例：铁皮加建、冷气机墙">
+    <button class="btn blue block" style="margin-top:10px" data-act="cpAdd">添加</button>
+  </div>`;
+}
+
+/* ========== 视图：记录列表 ========== */
+function vLog(){
+  if(!S.points.length) return `<div class="card empty">还没有点位记录<br><br><button class="btn pri" data-act="quickNew">＋ 新建点位</button></div>`;
+  const groups = {};
+  S.points.forEach(p => { const d = hkDate(p.t); (groups[d] = groups[d] || []).push(p); });
+  return `<button class="btn pri block" data-act="quickNew" style="margin-bottom:12px">＋ 新建点位</button>` +
+    Object.keys(groups).sort().reverse().map(d => `<h2 class="sec">${d} · ${groups[d].length} 个点位</h2>` + groups[d].map(p => {
+      const lc = luxCalc(p), done = stepsDone(p), need = stepsNeed();
+      return `<div class="card" data-act="open" data-id="${p.id}" style="cursor:pointer"><div class="pt">
+        <div class="code">${esc(p.code)}</div>
+        <div class="grow"><div><b>${esc(p.place || AREA_NAME[p.area])}</b></div>
+          <div class="tiny">${hkHM(p.t)} · ${esc(p.weather.join('/') || '天气未填')} ${p.ground ? '· 地面' + esc(p.ground) : ''} ${lc.ratio ? '· 光比 ' + lc.ratio : ''} ${p.photos.length ? '· 📷' + p.photos.length : ''}</div>
+          <div class="prog"><div style="width:${Math.min(100, done / need * 100)}%"></div></div></div>
+        <div class="tiny" style="text-align:right">${done}/${STEPS.length}</div>
+      </div></div>`;
+    }).join('')).join('');
+}
+function loadListThumbs(){}
+
+/* ========== 视图：点位编辑 ========== */
+const chipSet = (field, opts, sel, multi) => `<div class="chips">${opts.map(o => `<button class="chip ${(multi ? sel.includes(o) : sel === o) ? 'on' : ''}" data-act="chip" data-f="${field}" data-v="${esc(o)}" data-m="${multi ? 1 : 0}">${esc(o)}</button>`).join('')}</div>`;
+function vEditor(p){
+  if(!p){ editing = null; return vLog(); }
+  const placesOpts = allPlaces().map(x => `<option value="${esc(x.n)}">`).join('');
+  const elapsed = Math.round((Date.now() - p.t) / 60000);
+  return `<div class="backbar"><button class="btn sm" data-act="back">‹ 返回</button><div class="grow"><b style="font-size:17px">${esc(p.code)}</b> <span class="tiny">${hkDate(p.t)} ${hkHM(p.t)} · 已 ${elapsed} 分钟</span></div></div>
+
+  <div class="card"><h3>① 基本信息</h3>
+    <div class="g2">
+      <div><label class="f">区域</label><select data-f="area">${AREAS.map(([k, v]) => `<option value="${k}" ${p.area === k ? 'selected' : ''}>${k} · ${v}</option>`).join('')}</select></div>
+      <div><label class="f">英文简称（用于文件名）</label><input data-f="tag" value="${esc(p.tag)}" placeholder="如 SYSNorth" autocapitalize="off" autocomplete="off"></div>
+    </div>
+    <label class="f">地点</label><input data-f="place" list="plist" value="${esc(p.place)}" placeholder="选择或输入地点"><datalist id="plist">${placesOpts}</datalist>
+    <div class="row" style="margin-top:10px">
+      <button class="btn sm" data-act="gps">📍 获取定位</button>
+      <span class="tiny grow" id="gpsOut">${p.lat != null ? `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)} ±${Math.round(p.acc)}m · <a href="https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}" target="_blank" rel="noopener">地图</a>` : '未定位'}</span>
+      <button class="btn sm ghost" data-act="tnow">时间设为现在</button>
+    </div>
+  </div>
+
+  <div class="card"><h3>② 环境</h3>
+    <label class="f">天气（可多选）</label>${chipSet('weather', WEATHER, p.weather, true)}
+    <label class="f">地面</label>${chipSet('ground', GROUND, p.ground, false)}
+    <label class="f">主光源（可多选）</label>${chipSet('lights', LIGHTS, p.lights, true)}
+  </div>
+
+  <div class="card"><h3>③ 相机参数 <span class="tiny">白平衡 ${esc(S.settings.wb)}K · f/${esc(S.settings.fnum)}</span></h3>
+    <div class="g2">
+      <div><label class="f">快门</label><input data-f="shutter" value="${esc(p.shutter)}" placeholder="1/60" inputmode="text" autocomplete="off"></div>
+      <div><label class="f">ISO</label><input data-f="iso" value="${esc(p.iso)}" placeholder="400" inputmode="numeric"></div>
+    </div>
+    <div class="out" id="expOut"></div>
+  </div>
+
+  <div class="card"><h3>④ 亮度（lux）</h3>
+    <div class="g4">
+      ${[['A','最亮'],['B','街道'],['C','最暗'],['D','店内']].map(([k, l]) => `<div><label class="f">${k} ${l}</label><input data-f="lux.${k}" value="${esc(p.lux[k])}" inputmode="decimal" placeholder="—"></div>`).join('')}
+    </div>
+    <div class="out" id="luxOut"></div>
+    <div class="tiny" style="margin-top:6px">传感器朝向光来的方向，不要对着灯泡。只看同一台手机测出的比例。</div>
+  </div>
+
+  <div class="card"><h3>⑤ 色温 / 光源记录</h3>
+    ${p.colors.map((c, i) => `<div class="colorrow">
+      <div class="g2">
+        <div><label class="f">光源</label><select data-f="colors.${i}.type">${['', ...LIGHTS, '其他'].map(o => `<option ${c.type === o ? 'selected' : ''}>${o}</option>`).join('')}</select></div>
+        <div><label class="f">观感</label><select data-f="colors.${i}.feel">${['', ...FEELS].map(o => `<option ${c.feel === o ? 'selected' : ''}>${o}</option>`).join('')}</select></div>
+      </div>
+      <label class="f">灰卡照片文件名</label><input data-f="colors.${i}.file" value="${esc(c.file)}" autocapitalize="off">
+      <label class="f">读数（灰卡取色结果 / 备注）</label><input data-f="colors.${i}.reading" value="${esc(c.reading)}" placeholder="如 #FFC89A 偏暖">
+      <div style="text-align:right;margin-top:6px"><button class="btn sm ghost" data-act="cdel" data-i="${i}" style="color:var(--red)">删除此行</button></div>
+    </div>`).join('')}
+    <button class="btn sm blue" data-act="cadd" style="margin-top:8px">＋ 添加光源</button>
+  </div>
+
+  <div class="card"><h3>⑥ 拍摄流程 <span class="tiny" id="stepCnt"></span></h3>
+    <div class="row" style="justify-content:space-between"><span class="tiny">速记模式：跳过可选步骤</span>
+      <button class="chip ${S.quick ? 'on' : ''}" data-act="quick">${S.quick ? '速记模式 开' : '速记模式 关'}</button></div>
+    ${STEPS.map((s, i) => `<div class="step ${p.steps[i] ? 'on' : ''} ${s.opt ? 'opt' : ''} ${S.quick && s.opt ? 'skip' : ''}" data-act="step" data-i="${i}">
+      <div class="n">${p.steps[i] ? '✓' : i + 1}</div><div class="grow"><div class="t"><b>${s.t}</b></div><div class="tiny">${s.d}</div></div></div>`).join('')}
+  </div>
+
+  <div class="card"><h3>⑦ 文件命名 <span class="tiny">点一下复制，序号自动 +1</span></h3>
+    <div class="namebtns">${TYPES.map(([k, l]) => `<button data-act="name" data-k="${k}"><span>${esc(nextName(p, k))}</span><span class="l">${l}</span></button>`).join('')}</div>
+    <div style="text-align:right;margin-top:6px"><button class="btn sm ghost" data-act="nreset">重置序号</button></div>
+  </div>
+
+  <div class="card"><h3>⑧ 记录照片 <span class="tiny">定位照、灰卡快照等（压缩保存）</span></h3>
+    <div class="tiny">正式参考请用相机 App 拍 RAW；这里只存方便回忆的记录照。</div>
+    <div class="thumbs" id="thumbs"></div>
+    <button class="btn sm blue" data-act="photo" style="margin-top:8px">📷 拍照 / 选图</button>
+  </div>
+
+  <div class="card"><h3>⑨ 备注</h3>
+    <textarea data-f="notes" placeholder="反光、雾感、湿地面、人流、可复访的机位标记……">${esc(p.notes)}</textarea>
+  </div>
+
+  <div class="row" style="justify-content:space-between;margin-bottom:20px">
+    <button class="btn danger" data-act="pdelete">删除点位</button>
+    <button class="btn pri" data-act="back">完成</button>
+  </div>`;
+}
+function updateComputed(){
+  const p = getPoint(editing); if(!p) return;
+  const t = parseShutter(p.shutter), iso = num(p.iso), N = num(S.settings.fnum);
+  const ev = ev100FromExposure(t, iso, N);
+  const eo = $('#expOut');
+  if(eo) eo.innerHTML = ev == null ? '<span class="tiny">填入快门和 ISO，自动换算 EV100 和估算照度</span>' :
+    `EV100 <span class="v">${fmt(ev, 1)}</span> · 估算照度约 <span class="v">${fmt(evToLux(ev), 0)}</span> lux<div class="tiny">按相机测光反推，只作粗略参考</div>`;
+  const lc = luxCalc(p), lo = $('#luxOut');
+  if(lo){
+    const parts = [];
+    if(lc.ratio) parts.push(`光比 A:B:C <span class="v">${lc.ratio}</span>`);
+    if(lc.evAC != null) parts.push(`最亮→最暗 <b>${fmt(lc.evAC, 1)} 档</b>`);
+    if(lc.evAB != null) parts.push(`最亮→街道 <b>${fmt(lc.evAB, 1)} 档</b>`);
+    if(lc.evBC != null) parts.push(`街道→最暗 <b>${fmt(lc.evBC, 1)} 档</b>`);
+    if(lc.evDB != null) parts.push(`店内比街道 <b>${lc.evDB >= 0 ? '亮' : '暗'} ${fmt(Math.abs(lc.evDB), 1)} 档</b>`);
+    const evs = ['A','B','C','D'].filter(k => lc[k] > 0).map(k => `${k}: EV100 ${fmt(luxToEv(lc[k]), 1)}`).join(' · ');
+    lo.innerHTML = parts.length ? parts.join('<br>') + (evs ? `<div class="tiny" style="margin-top:4px">${evs}</div>` : '') : '<span class="tiny">至少填 C（最暗）和另一个值，自动算光比与档数</span>';
+  }
+  const sc = $('#stepCnt'); if(sc) sc.textContent = `${stepsDone(p)} / ${stepsNeed()}`;
+}
+async function loadThumbs(){
+  const p = getPoint(editing), box = $('#thumbs'); if(!p || !box) return;
+  const html = [];
+  for(const id of p.photos){ const u = await photoUrl(id); if(u) html.push(`<img src="${u}" data-act="pview" data-id="${id}" alt="">`); }
+  if($('#thumbs') === box) box.innerHTML = html.join('') || '';
+}
+
+/* ========== 视图：工具 ========== */
+function vTools(){
+  const s = S.settings;
+  const segs = [['calc','计算器'],['gc','灰卡取色'],['check','出发清单'],['set','设置']];
+  let body = '';
+  if(toolSeg === 'calc') body = `
+    <div class="card"><h3>曝光 → 照度</h3>
+      <div class="g4" style="grid-template-columns:1fr 1fr 1fr">
+        <div><label class="f">快门</label><input id="cT" placeholder="1/60" value="1/60"></div>
+        <div><label class="f">ISO</label><input id="cI" inputmode="numeric" value="${esc(s.iso)}"></div>
+        <div><label class="f">光圈 f/</label><input id="cN" inputmode="decimal" value="${esc(s.fnum)}"></div>
+      </div><div class="out" id="cOut"></div></div>
+    <div class="card"><h3>lux ↔ EV100</h3>
+      <div class="g2"><div><label class="f">lux</label><input id="lx" inputmode="decimal" placeholder="120"></div>
+      <div><label class="f">EV100</label><input id="le" inputmode="decimal" placeholder="5.6"></div></div>
+      <div class="tiny" style="margin-top:6px">EV100 = log2(lux / 2.5)，改任意一边自动换算</div></div>
+    <div class="card"><h3>光比 / 档数</h3>
+      <div class="g2"><div><label class="f">亮处 lux</label><input id="r1" inputmode="decimal" placeholder="800"></div>
+      <div><label class="f">暗处 lux</label><input id="r2" inputmode="decimal" placeholder="8"></div></div>
+      <div class="out" id="rOut"><span class="tiny">EV 差 = log2(亮 / 暗)</span></div></div>
+    <div class="card"><h3>典型照度对照（粗略）</h3><table class="t">${LUX_REF.map(r => `<tr><td>${r[0]}</td><td>${r[1]} lux</td></tr>`).join('')}</table>
+      <div class="tiny" style="margin-top:6px">测出来差距很大时，先检查传感器朝向，别急着否定数据。</div></div>`;
+  else if(toolSeg === 'gc') body = `
+    <div class="card"><h3>灰卡取色 → 灯光颜色</h3>
+      <div class="tiny">选一张带灰卡的照片（白平衡固定拍摄的 JPEG），点击灰卡中间区域取样。结果可当引擎里灯光颜色的起点。</div>
+      <button class="btn blue block" data-act="gcPick" style="margin:10px 0">选择照片</button>
+      <canvas id="gcCanvas" class="${gcImg ? '' : 'hide'}"></canvas>
+      <div id="gcOut">${gcResultHtml()}</div>
+    </div>
+    <div class="tip">判断方法：R &gt; B 偏暖，B &gt; R 偏冷，G 偏高偏青绿，G 偏低偏品红。灰卡要在照片里不过曝也不死黑。</div>`;
+  else if(toolSeg === 'check') body = `
+    <div class="card"><h3>装备清单</h3>${checklist('gear', GEAR)}</div>
+    <div class="card"><h3>手机设置</h3>${checklist('setup', SETUP)}</div>
+    <div class="card"><h3>注意事项</h3><div class="tiny" style="font-size:13px;line-height:1.7">
+      · 街市和公共屋邨拍摄要尊重隐私：拍店主或室内前先征得同意，不拍住宅内部。<br>
+      · 中国香港对无人机管制很严，带之前先查民航处最新规定，大部分高密度市区属限制区域。<br>
+      · 安全优先：别蹲在车道上拍灰卡；天桥和楼梯上注意背后人流。<br>
+      · 人多的地方先拍广角再补细节，别长时间占机位。<br>
+      · 茶餐厅等店铺的营业状态出发前再确认。</div></div>`;
+  else body = `
+    <div class="card"><h3>拍摄设置</h3>
+      <div class="g2">
+        <div><label class="f">白平衡（K）</label><input data-s="wb" value="${esc(s.wb)}" inputmode="numeric"></div>
+        <div><label class="f">默认 ISO</label><input data-s="iso" value="${esc(s.iso)}" inputmode="numeric"></div>
+        <div><label class="f">手机主摄光圈 f/</label><input data-s="fnum" value="${esc(s.fnum)}" inputmode="decimal"></div>
+        <div><label class="f">出发日期（第 1 天）</label><input type="date" data-s="tripStart" value="${esc(s.tripStart)}"></div>
+      </div>
+      <div class="tiny" style="margin-top:6px">光圈可在手机相机的照片信息里查到，用于曝光换算。</div></div>
+    <div class="card"><h3>命名规则</h3>
+      <div class="out" style="font-family:Consolas,monospace;font-size:13px">区域_简称_日期_时间_类型_序号<br>MK_SYSNorth_1005_1930_Env_01</div>
+      <table class="t" style="margin-top:8px">${TYPES.map(([k, v]) => `<tr><td><b>${k}</b></td><td>${v}</td></tr>`).join('')}</table>
+      <table class="t" style="margin-top:8px">${AREAS.map(([k, v]) => `<tr><td><b>${k}</b></td><td>${v}</td></tr>`).join('')}</table></div>`;
+  return `<div class="seg">${segs.map(([k, v]) => `<button class="${toolSeg === k ? 'on' : ''}" data-act="tseg" data-v="${k}">${v}</button>`).join('')}</div>${body}`;
+}
+function checklist(key, items, sub){
+  const st = (S.checks[key] = S.checks[key] || {});
+  return items.map((t, i) => `<label class="chk ${st[i] ? 'done' : ''}"><input type="checkbox" data-act="ck" data-k="${key}" data-i="${i}" ${st[i] ? 'checked' : ''}><div class="t">${esc(t)}</div></label>`).join('');
+}
+
+/* 灰卡取色 */
+let gcImg = null, gcRes = null, gcPt = null;
+function drawGc(){
+  const c = $('#gcCanvas'); if(!c || !gcImg) return;
+  const w = Math.min(1400, gcImg.naturalWidth), s = w / gcImg.naturalWidth;
+  c.width = w; c.height = Math.round(gcImg.naturalHeight * s);
+  const g = c.getContext('2d', {willReadFrequently:true}); g.drawImage(gcImg, 0, 0, c.width, c.height);
+  if(gcPt){ g.strokeStyle = '#ff2d55'; g.lineWidth = Math.max(2, c.width / 300); const r = Math.max(8, c.width / 60); g.strokeRect(gcPt.x - r, gcPt.y - r, r * 2, r * 2); }
+}
+function srgbToLin(c){ c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+function linToSrgb(c){ c = c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055; return Math.round(Math.max(0, Math.min(1, c)) * 255); }
+function sampleGc(x, y){
+  const c = $('#gcCanvas'), g = c.getContext('2d', {willReadFrequently:true});
+  drawGc();
+  const r = Math.max(4, Math.round(c.width / 80));
+  const x0 = Math.max(0, Math.round(x - r)), y0 = Math.max(0, Math.round(y - r));
+  const w = Math.min(c.width - x0, r * 2), h = Math.min(c.height - y0, r * 2);
+  const d = g.getImageData(x0, y0, w, h).data; let R = 0, G = 0, B = 0, n = 0;
+  for(let i = 0; i < d.length; i += 4){ R += d[i]; G += d[i + 1]; B += d[i + 2]; n++; }
+  R /= n; G /= n; B /= n;
+  const lr = srgbToLin(R), lg = srgbToLin(G), lb = srgbToLin(B), mx = Math.max(lr, lg, lb) || 1;
+  const nr = lr / mx, ng = lg / mx, nb = lb / mx;
+  const hex = '#' + [nr, ng, nb].map(v => linToSrgb(v).toString(16).padStart(2, '0')).join('').toUpperCase();
+  const tags = [];
+  if(lr / lb > 1.1) tags.push('偏暖'); else if(lb / lr > 1.1) tags.push('偏冷'); else tags.push('接近中性');
+  const rb = (lr + lb) / 2;
+  if(lg > rb * 1.08) tags.push('偏青绿'); else if(lg < rb * 0.92) tags.push('偏品红');
+  const lum = 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
+  gcRes = {R: Math.round(R), G: Math.round(G), B: Math.round(B), hex, lin: [nr, ng, nb].map(v => v.toFixed(3)).join(', '), tags: tags.join('，'), warn: (Math.max(R, G, B) > 245 ? '灰卡接近过曝，结果可能不准' : lum < 0.01 ? '灰卡太暗，结果可能不准' : '')};
+  gcPt = {x, y}; drawGc();
+  $('#gcOut').innerHTML = gcResultHtml();
+}
+function gcResultHtml(){
+  if(!gcRes) return '';
+  return `<div class="out"><div class="row"><div class="swatch" style="background:${gcRes.hex}"></div>
+    <div class="grow">灯光颜色 <span class="v">${gcRes.hex}</span><div class="tiny">${gcRes.tags}</div></div>
+    <button class="btn sm" data-act="copyTxt" data-t="${gcRes.hex} ${gcRes.tags}">复制</button></div>
+    <div class="tiny" style="margin-top:6px">取样 sRGB：${gcRes.R}, ${gcRes.G}, ${gcRes.B} · 线性归一化：${gcRes.lin}</div>
+    ${gcRes.warn ? `<div class="tiny" style="color:var(--red)">${gcRes.warn}</div>` : ''}</div>`;
+}
+
+/* ========== 视图：收工 ========== */
+function vWrap(){
+  const today = hkDate(Date.now()), key = 'wrap_' + today;
+  const pts = S.points.filter(p => hkDate(p.t) === today);
+  const miss = pts.filter(p => !p.steps[3] || !(num(p.lux.C) > 0));
+  return `<div class="card"><h3>今日收工 · ${today}</h3>
+    <div class="sub">今天 ${pts.length} 个点位${miss.length ? `，<b style="color:var(--red)">${miss.length} 个缺灰卡或最暗值</b>：${miss.map(p => esc(p.code)).join('、')}` : pts.length ? '，数据齐全' : ''}</div>
+    ${checklist(key, WRAP)}</div>
+  <div class="card"><h3>导出与备份</h3>
+    <div class="tiny">在手机上会弹出分享面板，可直接发到微信、邮件、AirDrop 或存到文件。</div>
+    <div class="g2" style="margin-top:10px">
+      <button class="btn" data-act="exCsv">点位表 CSV</button>
+      <button class="btn" data-act="exColor">色温表 CSV</button>
+      <button class="btn" data-act="exMd">报告 Markdown</button>
+      <button class="btn" data-act="exJson">备份（不含照片）</button>
+    </div>
+    <button class="btn blue block" style="margin-top:8px" data-act="exJsonP">完整备份（含记录照片）</button>
+    <button class="btn block" style="margin-top:8px" data-act="exPhotos">逐张导出记录照片（按命名规则）</button>
+    <button class="btn ghost block" style="margin-top:8px" data-act="import">从备份恢复…</button>
+    <div class="tiny" id="usage" style="margin-top:8px"></div>
+  </div>
+  <div class="warn">数据只保存在这台手机的这个浏览器里。iPhone 上“添加到主屏幕”的图标和 Safari 标签页<b>存储不互通</b>，请固定用一种方式打开，并每天导出备份。</div>
+  <div class="card"><h3>安装到手机</h3><div class="tiny" style="font-size:13px;line-height:1.7">
+    iPhone：Safari 打开 → 分享按钮 → 添加到主屏幕。<br>安卓：Chrome 打开 → 菜单 → 添加到主屏幕 / 安装应用。<br>装好后没有网络也能打开使用（地图链接除外）。</div></div>
+  <div style="text-align:center;margin:16px 0"><button class="btn sm danger" data-act="wipe">清空全部数据</button></div>`;
+}
+async function showUsage(){
+  const el = $('#usage'); if(!el || !navigator.storage || !navigator.storage.estimate) return;
+  try{ const e = await navigator.storage.estimate(); el.textContent = `已用存储约 ${(e.usage / 1048576).toFixed(1)} MB` + (e.quota ? ` / 可用 ${(e.quota / 1048576 / 1024).toFixed(1)} GB` : ''); }catch(_){}
+}
+
+/* ========== 导出 ========== */
+const csvCell = v => { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+const csv = rows => '\ufeff' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');
+const stamp = () => hkMD(Date.now()) + '_' + hkHMc(Date.now());
+function exportCsv(){
+  const rows = [['编号','区域','地点','简称','日期','时间','纬度','经度','天气','地面','主光源','快门','ISO','A最亮','B街道','C最暗','D店内','光比A:B:C','最亮→最暗(档)','完成步骤','照片数','备注']];
+  S.points.slice().reverse().forEach(p => { const lc = luxCalc(p); rows.push([p.code, p.area, p.place, p.tag, hkDate(p.t), hkHM(p.t), p.lat ?? '', p.lng ?? '', p.weather.join('/'), p.ground, p.lights.join('/'), p.shutter, p.iso, p.lux.A, p.lux.B, p.lux.C, p.lux.D, lc.ratio || '', lc.evAC != null ? lc.evAC.toFixed(1) : '', stepsDone(p) + '/' + STEPS.length, p.photos.length, p.notes]); });
+  shareOrDownload('HK取景_点位表_' + stamp() + '.csv', new Blob([csv(rows)], {type:'text/csv'}));
+}
+function exportColor(){
+  const rows = [['编号','地点','光源','观感','灰卡文件名','读数']];
+  S.points.slice().reverse().forEach(p => p.colors.forEach(c => rows.push([p.code, p.place, c.type, c.feel, c.file, c.reading])));
+  shareOrDownload('HK取景_色温表_' + stamp() + '.csv', new Blob([csv(rows)], {type:'text/csv'}));
+}
+function exportMd(){
+  let md = `# 香港取景记录\n\n导出时间：${hkDate(Date.now())} ${hkHM(Date.now())}（香港）　白平衡 ${S.settings.wb}K　光圈 f/${S.settings.fnum}\n\n`;
+  const groups = {}; S.points.slice().reverse().forEach(p => { const d = hkDate(p.t); (groups[d] = groups[d] || []).push(p); });
+  Object.keys(groups).sort().forEach(d => {
+    md += `## ${d}\n\n`;
+    groups[d].forEach(p => {
+      const lc = luxCalc(p);
+      md += `### ${p.code} ${p.place || AREA_NAME[p.area]}\n\n- 时间：${hkHM(p.t)}${p.lat != null ? `　位置：${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}` : ''}\n- 天气：${p.weather.join('/') || '—'}　地面：${p.ground || '—'}\n- 主光源：${p.lights.join('、') || '—'}\n- 相机：${p.shutter || '—'} / ISO ${p.iso || '—'}\n- 亮度：A ${p.lux.A || '—'} / B ${p.lux.B || '—'} / C ${p.lux.C || '—'} / D ${p.lux.D || '—'} lux${lc.ratio ? `　光比 ${lc.ratio}` : ''}${lc.evAC != null ? `　动态范围约 ${lc.evAC.toFixed(1)} 档` : ''}\n`;
+      if(p.colors.length) md += `- 光源色：\n` + p.colors.map(c => `  - ${c.type || '—'}（${c.feel || '—'}）${c.file ? ' · ' + c.file : ''}${c.reading ? ' · ' + c.reading : ''}`).join('\n') + '\n';
+      md += `- 文件前缀：\`${fileBase(p)}\`\n- 流程：${stepsDone(p)}/${STEPS.length}${STEPS.some((s, i) => !p.steps[i]) ? '（未完成：' + STEPS.filter((s, i) => !p.steps[i]).map(s => s.t).join('、') + '）' : ''}\n`;
+      if(p.notes) md += `- 备注：${p.notes.replace(/\n/g, ' ')}\n`;
+      md += '\n';
+    });
+  });
+  const ps = allPlaces().filter(p => pstate(p.id).note);
+  if(ps.length) md += `## 地点备注\n\n` + ps.map(p => `- ${p.n}：${pstate(p.id).note}`).join('\n') + '\n';
+  shareOrDownload('HK取景_报告_' + stamp() + '.md', new Blob([md], {type:'text/markdown'}));
+}
+async function exportJson(withPhotos){
+  const data = JSON.parse(JSON.stringify(S)); data.exportedAt = Date.now();
+  if(withPhotos){ toast('正在打包照片…'); const all = await DB.all(); data.photoData = {}; for(const o of all) data.photoData[o.id] = {pointId: o.pointId, t: o.t, d: await blobToDataUrl(o.blob)}; }
+  shareOrDownload('HK取景_备份_' + (withPhotos ? '含照片_' : '') + stamp() + '.json', new Blob([JSON.stringify(data)], {type:'application/json'}));
+}
+async function exportPhotos(){
+  const list = []; S.points.forEach(p => p.photos.forEach((id, i) => list.push([p, id, i])));
+  if(!list.length) return toast('还没有记录照片');
+  if(!confirm(`将逐张导出 ${list.length} 张照片，继续？`)) return;
+  for(const [p, id, i] of list){ const o = await DB.get(id); if(o) await shareOrDownload(`${fileBase(p)}_Ref_${pad(i + 1)}.jpg`, o.blob); }
+}
+async function importJson(file){
+  try{
+    const data = JSON.parse(await file.text());
+    if(!data || !data.v || !Array.isArray(data.points)) throw new Error('格式不对');
+    if(!confirm(`备份里有 ${data.points.length} 个点位。恢复会覆盖当前数据，继续？`)) return;
+    if(data.photoData){ for(const [id, o] of Object.entries(data.photoData)) await DB.put({id, pointId: o.pointId, t: o.t, blob: await dataUrlToBlob(o.d)}); delete data.photoData; }
+    delete data.exportedAt; S = Object.assign(fresh(), data); saveNow(); toast('已恢复'); go('log');
+  }catch(e){ alert('恢复失败：' + e.message); }
+}
+
+/* ========== 事件 ========== */
+let photoTarget = null;
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-act]'); if(!el) return;
+  const a = el.dataset.act, id = el.dataset.id;
+  if(el.tagName === 'INPUT' && el.type === 'checkbox') return; // 由 change 处理
+  const p = editing ? getPoint(editing) : null;
+  switch(a){
+    case 'goTools': toolSeg = 'set'; go('tools'); break;
+    case 'day': dayIdx = +el.dataset.i; render(); break;
+    case 'quickNew': { const np = newPoint('OTH'); go('log', {edit: np.id}); toast('已新建 ' + np.code + '，记得选区域'); break; }
+    case 'pnew': { const pl = placeById(id); const np = newPoint(pl.area, pl.n, pl.id); go('log', {edit: np.id}); toast('已新建 ' + np.code); break; }
+    case 'pnote': { const s = pstate(id); const v = prompt('地点备注', s.note || ''); if(v !== null){ s.note = v.trim(); save(); render(); } break; }
+    case 'pdel': if(confirm('删除这个自定义地点？')){ S.customPlaces = S.customPlaces.filter(x => x.id !== id); save(); render(); } break;
+    case 'pf': placeFilter = el.dataset.v; render(); break;
+    case 'cpAdd': { const n = $('#cpName').value.trim(); if(!n) return toast('请填写名称'); S.customPlaces.push({id: 'c_' + uid(), cat: 'X', area: $('#cpArea').value, n, d: $('#cpDesc').value.trim(), q: n, custom: true}); save(); render(); toast('已添加'); break; }
+    case 'open': go('log', {edit: id}); break;
+    case 'back': saveNow(); editing = null; render(); window.scrollTo(0, 0); break;
+    case 'chip': {
+      if(el.dataset.f === undefined) break;
+      const f = el.dataset.f, v = el.dataset.v;
+      if(el.dataset.m === '1'){ const arr = p[f]; const i = arr.indexOf(v); i >= 0 ? arr.splice(i, 1) : arr.push(v); }
+      else p[f] = p[f] === v ? '' : v;
+      save(); rerenderKeep(); break;
+    }
+    case 'quick': S.quick = !S.quick; save(); rerenderKeep(); break;
+    case 'step': { const i = +el.dataset.i; p.steps[i] = !p.steps[i]; save(); rerenderKeep(); break; }
+    case 'name': { const k = el.dataset.k; const n = nextName(p, k); await copy(n); p.seq[k] = (p.seq[k] || 0) + 1; save(); rerenderKeep(); break; }
+    case 'nreset': if(confirm('把所有类型的序号重置为 01？')){ p.seq = {}; save(); rerenderKeep(); } break;
+    case 'cadd': p.colors.push({type: '', feel: '', file: nextName(p, 'Gray'), reading: ''}); save(); rerenderKeep(); break;
+    case 'cdel': p.colors.splice(+el.dataset.i, 1); save(); rerenderKeep(); break;
+    case 'tnow': if(confirm('把点位时间改为现在？文件名里的时间也会跟着变。')){ p.t = Date.now(); save(); rerenderKeep(); } break;
+    case 'gps': {
+      if(!navigator.geolocation) return toast('此浏览器不支持定位');
+      $('#gpsOut').textContent = '定位中…';
+      navigator.geolocation.getCurrentPosition(pos => { p.lat = pos.coords.latitude; p.lng = pos.coords.longitude; p.acc = pos.coords.accuracy; save(); rerenderKeep(); toast('已定位'); },
+        err => { $('#gpsOut').textContent = '定位失败：' + (err.code === 1 ? '没有定位权限' : '信号不好，稍后重试'); }, {enableHighAccuracy: true, timeout: 15000, maximumAge: 30000});
+      break;
+    }
+    case 'photo': photoTarget = p.id; $('#photoInput').value = ''; $('#photoInput').click(); break;
+    case 'pview': {
+      const u = await photoUrl(id), pp = getPoint(editing), idx = pp.photos.indexOf(id);
+      const m = document.createElement('div'); m.className = 'modal';
+      m.innerHTML = `<img src="${u}" alt=""><div class="row"><button class="btn" data-m="dl">保存</button><button class="btn danger" data-m="del">删除</button><button class="btn pri" data-m="x">关闭</button></div>`;
+      m.addEventListener('click', async ev => {
+        const b = ev.target.closest('[data-m]'); if(!b){ if(ev.target === m) m.remove(); return; }
+        ev.stopPropagation();
+        if(b.dataset.m === 'dl'){ const o = await DB.get(id); shareOrDownload(`${fileBase(pp)}_Ref_${pad(idx + 1)}.jpg`, o.blob); }
+        if(b.dataset.m === 'del' && confirm('删除这张照片？')){ pp.photos = pp.photos.filter(x => x !== id); await DB.del(id); save(); m.remove(); rerenderKeep(); }
+        if(b.dataset.m === 'x') m.remove();
+      });
+      document.body.appendChild(m); break;
+    }
+    case 'pdelete': if(confirm(`删除点位 ${p.code}？此操作无法撤销。`)){ for(const pid of p.photos) await DB.del(pid).catch(() => {}); S.points = S.points.filter(x => x.id !== p.id); save(); editing = null; render(); } break;
+    case 'tseg': toolSeg = el.dataset.v; render(); break;
+    case 'gcPick': $('#gcInput').value = ''; $('#gcInput').click(); break;
+    case 'copyTxt': copy(el.dataset.t); break;
+    case 'exCsv': exportCsv(); break;
+    case 'exColor': exportColor(); break;
+    case 'exMd': exportMd(); break;
+    case 'exJson': exportJson(false); break;
+    case 'exJsonP': exportJson(true); break;
+    case 'exPhotos': exportPhotos(); break;
+    case 'import': $('#importInput').value = ''; $('#importInput').click(); break;
+    case 'wipe':
+      if(confirm('清空全部数据（点位、照片、勾选）？建议先导出完整备份。') && confirm('再次确认：真的清空？')){
+        const all = await DB.all().catch(() => []); for(const o of all) await DB.del(o.id); S = fresh(); saveNow(); go('today'); toast('已清空');
+      } break;
+  }
+});
+function rerenderKeep(){ const y = window.scrollY; render(); window.scrollTo(0, y); }
+
+document.addEventListener('change', e => {
+  const el = e.target;
+  if(el.dataset.act === 'pdone'){ pstate(el.dataset.id).done = el.checked; save(); rerenderKeep(); return; }
+  if(el.dataset.act === 'ck'){ const st = (S.checks[el.dataset.k] = S.checks[el.dataset.k] || {}); st[el.dataset.i] = el.checked; save(); el.closest('.chk').classList.toggle('done', el.checked); return; }
+  if(el.dataset.f && el.tagName === 'SELECT') setField(el);
+  if(el.dataset.f === 'area'){ const p = getPoint(editing); reCode(p); rerenderKeep(); }
+  if(el.dataset.s){ S.settings[el.dataset.s] = el.value.trim(); save(); if(el.dataset.s === 'tripStart') dayIdx = null; }
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  if(el.dataset.f && el.tagName !== 'SELECT'){ setField(el); if(el.dataset.f === 'tag') updateNames(); }
+  if(el.dataset.s){ S.settings[el.dataset.s] = el.value.trim(); save(); }
+  if(['cT','cI','cN'].includes(el.id)) calcExp();
+  if(el.id === 'lx'){ const v = num(el.value); $('#le').value = v > 0 ? luxToEv(v).toFixed(2) : ''; }
+  if(el.id === 'le'){ const v = num(el.value); $('#lx').value = v != null ? fmt(evToLux(v), 1) : ''; }
+  if(el.id === 'r1' || el.id === 'r2'){ const a = num($('#r1').value), b = num($('#r2').value); $('#rOut').innerHTML = a > 0 && b > 0 ? `比值 <span class="v">${fmt(a / b, 1)} : 1</span> · 相差 <span class="v">${fmt(log2(a / b), 2)} 档</span>` : '<span class="tiny">EV 差 = log2(亮 / 暗)</span>'; }
+});
+function setField(el){
+  const p = getPoint(editing); if(!p) return;
+  const path = el.dataset.f.split('.'); let o = p;
+  for(let i = 0; i < path.length - 1; i++) o = o[path[i]];
+  o[path[path.length - 1]] = el.value;
+  save(); updateComputed();
+}
+function reCode(p){
+  const seq = S.points.filter(x => x.area === p.area && x.id !== p.id).reduce((m, x) => Math.max(m, x.seqNo || 0), 0) + 1;
+  p.seqNo = seq; p.code = p.area + '-' + pad(seq); save();
+}
+function updateNames(){
+  const p = getPoint(editing);
+  document.querySelectorAll('[data-act=name]').forEach(b => { b.firstElementChild.textContent = nextName(p, b.dataset.k); });
+}
+function calcExp(){
+  const t = parseShutter($('#cT').value), iso = num($('#cI').value), N = num($('#cN').value), ev = ev100FromExposure(t, iso, N);
+  $('#cOut').innerHTML = ev == null ? '<span class="tiny">EV100 = log2(N² / t) − log2(ISO / 100)</span>' : `EV100 <span class="v">${fmt(ev, 2)}</span> · 估算照度约 <span class="v">${fmt(evToLux(ev), 0)}</span> lux`;
+}
+
+$('#photoInput').addEventListener('change', async e => {
+  const files = [...e.target.files]; if(!files.length || !photoTarget) return;
+  const p = getPoint(photoTarget); if(!p) return;
+  toast('正在保存照片…');
+  for(const f of files){
+    try{ const blob = await compress(f); const id = uid(); await DB.put({id, pointId: p.id, t: Date.now(), blob}); p.photos.push(id); }
+    catch(err){ toast('照片保存失败：' + err.message); }
+  }
+  save(); if(editing === p.id) rerenderKeep(); toast('已保存 ' + files.length + ' 张');
+});
+$('#gcInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; if(!f) return;
+  try{ const {img} = await loadImage(f); gcImg = img; gcRes = null; gcPt = null; render(); toast('点击灰卡中间取样'); }
+  catch(err){ toast(err.message); }
+});
+$('#importInput').addEventListener('change', e => { const f = e.target.files[0]; if(f) importJson(f); });
+document.addEventListener('click', e => {
+  if(e.target.id !== 'gcCanvas') return;
+  const c = e.target, r = c.getBoundingClientRect();
+  sampleGc((e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height);
+});
+
+/* ========== 顶部时钟 ========== */
+function tick(){
+  const o = hk(Date.now());
+  $('#hClock').innerHTML = `香港 ${o.hour}:${o.minute}<br>${o.month}/${o.day} ${({Mon:'周一',Tue:'周二',Wed:'周三',Thu:'周四',Fri:'周五',Sat:'周六',Sun:'周日'})[o.weekday] || ''}`;
+}
+setInterval(() => { tick(); if(tab === 'today') { const y = window.scrollY; const a = document.activeElement; if(!a || a === document.body) { render(); window.scrollTo(0, y); } } }, 60000);
+
+/* ========== 启动 ========== */
+if(S.settings.tripStart) dayIdx = null;
+tick(); render();
+if('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
