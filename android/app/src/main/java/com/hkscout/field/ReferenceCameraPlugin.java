@@ -14,6 +14,16 @@ import org.json.JSONObject;
 
 @CapacitorPlugin(name="ReferenceCamera", permissions={@Permission(alias="camera", strings={Manifest.permission.CAMERA}),@Permission(alias="gallery",strings={Manifest.permission.WRITE_EXTERNAL_STORAGE})})
 public class ReferenceCameraPlugin extends Plugin {
+    @PluginMethod public void measureEV(PluginCall call) {
+        if(getPermissionState("camera")!=PermissionState.GRANTED){requestPermissionForAlias("camera",call,"meterPermission");return;}
+        Intent intent=new Intent(getActivity(),CameraMeterActivity.class);intent.putExtra("language",call.getString("language","en"));startActivityForResult(call,intent,"metered");
+    }
+    @PermissionCallback private void meterPermission(PluginCall call){if(getPermissionState("camera")==PermissionState.GRANTED)measureEV(call);else call.reject("Camera permission denied. Allow camera access in system settings or enter EV manually.");}
+    @ActivityCallback private void metered(PluginCall call,ActivityResult result){
+        if(call==null)return;
+        if(result.getResultCode()!=Activity.RESULT_OK){String error=result.getData()==null?null:result.getData().getStringExtra("error");if(error!=null)call.reject(error);else{JSObject out=new JSObject();out.put("cancelled",true);call.resolve(out);}return;}
+        try{call.resolve(JSObject.fromJSONObject(new JSONObject(result.getData().getStringExtra("meter"))));}catch(Exception e){call.reject("Camera exposure metadata unavailable. No reading saved.");}
+    }
     @PluginMethod public void capture(PluginCall call) {
         if(getPermissionState("camera")!=PermissionState.GRANTED){requestPermissionForAlias("camera",call,"cameraPermission");return;}
         if(android.os.Build.VERSION.SDK_INT<29&&getPermissionState("gallery")!=PermissionState.GRANTED){requestPermissionForAlias("gallery",call,"galleryPermission");return;}

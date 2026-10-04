@@ -1,10 +1,26 @@
-# Scout 2.1.5 implementation handoff
+# Scout 2.1.6 implementation handoff
 
 Date: 2026-10-03. Repository: hk-scout. This is the local implementation handoff, distinct from the shoot-specific HANDOFF.md generated inside each export.
 
 ## Phone test publication
 
-The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.5-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.6-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+
+## Clapperboard and rear-camera EV · 2.1.6
+
+User requests: make the slate look like a film clapperboard and use the phone's main camera for EV so aiming is easier. Existing authorization covers updating both browser and Android editions.
+
+Slate: a monochrome closed clapper-strip header, trip/production and stop/scene cells, large real stop code, separate clock and light fields, GPS/weather and unchanged QR plus readable IDs. Details remain expandable outside the photograph area. Bottom actions stay visible at 390×844, 360×640, 320×568 and 844×390. English/Simplified Chinese labels are included. No clap interaction or invented production metadata was added.
+
+CameraMeterActivity is a private preview-only Camera2 activity exposed through ReferenceCamera.measureEV. It requests the existing camera permission and never captures an image, writes a gallery file or requests storage permission. Rear-camera selection prefers a logical camera at 1x, falling back to a rear-camera focal-length heuristic; the API has no universal physical-main-lens identifier. CameraPreview's tested fit/orientation geometry is reused. The viewfinder shows a target, actual exposure settings and EV100; save returns to the same slate without another GPS/weather request. Cancel, camera failure, backgrounding or permission denial preserve the prior reading. A busy guard rejects duplicate launches, and the transaction rechecks that the stop is still present, active and has the same finish boundary.
+
+EV100 is computed from actual CaptureResult aperture, exposure duration, sensor ISO and post-RAW sensitivity gain. Auto exposure is requested with zero compensation, flash off and no AE lock. Supported devices receive a central 20%-width/height AE region request, labelled as an algorithm request rather than a calibrated spot meter; unsupported devices explicitly use whole-frame AE. The native CameraExposure helper requires converged AE, increasing sensor frame timestamps, at least six samples over 600 ms, no more than 0.25 EV spread and a sample age at most 750 ms. A conservative joint shutter/ISO limit guard rejects extremes. A rendered-preview center highlight check blocks obvious clipping; it is not RAW clipping analysis. These checks establish freshness and stability, not photometric accuracy. Camera EV is an uncalibrated reflected-scene estimate, never lux or measured CCT.
+
+Data: schema 2 adds optional reading.cameraMeter evidence only for method=camera_ev: source, actual camera/device, aperture/exposureNs/iso/postRawBoost, AE state and compensation, requested metering mode, raw frame timestamp string, sample window/range/count and preview clipping fraction. Parent measuredAt and value remain canonical. src/camera-ev.js validates the bridge response and the persisted evidence against recomputed EV; src/model.js applies this to imported records. Store.change remains the only notebook write owner. No migration/backfill is needed; historical manually entered camera_ev stays separate. Field ZIP records retain the evidence and handoff prose includes the estimate's protocol/calibration. Permanent cleanup's existing allowlist strips cameraMeter. Browser clients display transferred camera EV and retain manual input; no browser camera brightness-to-EV approximation was introduced.
+
+Validation: 50 JS unit/integration cases passed, including camera math/gain, invalid/freshness evidence, ZIP preservation and cleanup. A new disposable Chromium bridge fixture checks save, cancel, error, invalid result, duplicate launch, GPS request count, no image creation, both languages and responsive footer hit targets. Full capture/transfer/offline and slate lux/manual/weather regressions passed without page errors. Clapperboard screenshots were inspected. All 20 Android JVM cases passed (7 EV, 8 preview geometry, 5 original copy), and the debug APK assembled with the existing signing identity. Bridge fixtures are not phone-camera tests; no physical phone was connected. S25 Edge/Xiaomi lens choice, native viewfinder, lifecycle, exposure convergence and measured accuracy remain a device trial.
+
+Release: versionName 2.1.6 / versionCode 10; same app ID and signing identity. Browser and packaged assets carry the same implementation. Complete Markdown change list: README.md and HANDOFF.md.
 
 ## Field Guide and PC Workspace · 2.1.5
 
@@ -163,7 +179,7 @@ Required physical trial before relying on the app for a trip:
 
 ## Deliberate limits and follow-up
 
-- No native iOS app, camera-derived live EV/CCT, automatic slate decoding or cloud synchronization.
+- No native iOS app, calibrated camera photometry, camera-derived CCT, automatic slate decoding or cloud synchronization. Android camera EV is the uncalibrated estimate described in the 2.1.6 section.
 - No automatic semantic sorting, RAW development or destructive culling. The assistant reviews exported previews and evidence; RAW-level quality needs original-file inspection.
 - No offline basemap, reverse geocoding, precision pose reconstruction or guaranteed GPS in urban canyons.
 - No long-term browser storage guarantee. Portable exports and independent copies remain necessary.

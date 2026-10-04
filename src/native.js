@@ -8,6 +8,7 @@ export const native=Capacitor.isNativePlatform();
 const LightMeter=registerPlugin('LightMeter');
 const ReferenceCamera=registerPlugin('ReferenceCamera'),ScoutUpdater=registerPlugin('ScoutUpdater');
 export const nativeCamera=native&&Capacitor.isPluginAvailable('ReferenceCamera');
+export const measureCameraEV=options=>ReferenceCamera.measureEV(options);
 export const captureReference=options=>ReferenceCamera.capture(options);
 export const pendingCaptures=()=>ReferenceCamera.pending();
 export const publishCapture=id=>ReferenceCamera.publish({id});

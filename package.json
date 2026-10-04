@@ -1,6 +1,6 @@
 {
   "name": "hk-scout",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,8 @@
     "test:navigation": "node tests/navigation.browser.mjs",
     "catalogue": "node scripts/catalogue.mjs",
     "android:sync": "npm run build && cap sync android",
-    "test:workspace": "node tests/workspace.browser.mjs"
+    "test:workspace": "node tests/workspace.browser.mjs",
+    "test:camera-ev": "node tests/camera-ev.browser.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.2",

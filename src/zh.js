@@ -1,4 +1,20 @@
 export const zh=Object.fromEntries(`
+Camera EV · aim & save	主摄 EV · 瞄准测光
+Camera EV100 · estimate	相机 EV100 · 估算
+Camera EV: aim at a lit surface. Lux: screen up, sensor clear.	相机 EV：对准受光表面。照度 lux：屏幕朝上，露出传感器。
+Camera view	相机取景区域
+Camera EV saved as an uncalibrated reflected-light estimate.	已保存相机 EV，标记为未经校准的反射光曝光估算。
+Uncalibrated camera estimate	未经校准的相机估算
+No fresh, stable camera exposure was returned. Try again.	未获得新鲜且稳定的相机曝光数据，请重试。
+Stop changed. Measure again in the current stop.	地点记录已变化，请在当前地点重新测量。
+Camera permission denied. Allow camera access in system settings or enter EV manually.	相机权限被拒绝。请在系统设置允许访问相机，或手动输入 EV。
+Camera exposure metadata unavailable. No reading saved.	无法读取相机曝光数据，未保存读数。
+
+TRIP / PRODUCTION	行程 / 拍摄项目
+STOP / SCENE	地点 / 场景编号
+TIME	时间
+LOCATION / WEATHER	位置 / 天气
+
 Camera originals stay in their source folders. Scout stores metadata and previews.	相机原片保留在源文件夹中，Scout 保存元数据和预览。
 
 new or enriched files	个新增或补充信息的文件
@@ -566,7 +582,7 @@ Save sample in image notes	将取样保存到图片笔记
 Saved GPS with low accuracy. Add a landmark note.	已保存低精度 GPS，请补充地标说明。
 Saved on this device	已保存到本机
 Saving…	正在保存…
-Scout 2.1.5 · local files first · no analytics or automatic cloud/AI upload	Scout 2.1.5 · 本地文件优先 · 无统计跟踪或自动云端 / AI 上传
+Scout 2.1.6 · local files first · no analytics or automatic cloud/AI upload	Scout 2.1.6 · 本地文件优先 · 无统计跟踪或自动云端 / AI 上传
 Scout ZIP, desktop catalogue ZIP, or original v1 JSON backup.	Scout ZIP、电脑目录 ZIP 或原 v1 JSON 备份。
 Scout built-in light meter	Scout 内置测光
 Scout for Android	安卓 Scout

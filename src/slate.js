@@ -8,7 +8,7 @@ export function slateLight(reading){
     if(reading.value<0)return null;
     return {lux:reading.value,ev:reading.value>0?Math.log2(reading.value/2.5):null,estimated:true};
   }
-  if(['camera_ev','manual_ev'].includes(reading.method))return {lux:null,ev:reading.value,estimated:false};
+  if(['camera_ev','manual_ev'].includes(reading.method))return {lux:null,ev:reading.value,estimated:false,...(reading.cameraMeter?.source==='android_camera2_ae'?{cameraEstimated:true}:{})};
   return null;
 }
 export function latestSlateReading(records,setId){

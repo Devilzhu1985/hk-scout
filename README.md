@@ -5,11 +5,23 @@ An offline field notebook for environment art and lighting reference. Use a phon
 ## Test on your phone
 
 - **Browser app:** [Open Scout](https://devilzhu1985.github.io/hk-scout/) in Chrome on Android or Safari on iPhone. Open once online, then add it to your home screen and test an offline reload.
-- **Android phone trial:** download `scout-2.1.5-preview.1-debug.apk` from the [Android test release](https://github.com/Devilzhu1985/hk-scout/releases/tag/v2.1.5-preview.1). This is the complete Scout app with its light meter built in, not a separate light-meter utility. This personal test build includes direct sensor access; browser mode generally uses manual light readings. Actual sensor availability and accuracy still need testing on your phone.
+- **Android phone trial:** download `scout-2.1.6-preview.1-debug.apk` from the [Android test release](https://github.com/Devilzhu1985/hk-scout/releases/tag/v2.1.6-preview.1). This is the complete Scout app with its light meter built in, not a separate light-meter utility. This personal test build includes direct sensor access; browser mode generally uses manual light readings. Actual sensor availability and accuracy still need testing on your phone.
 - If the old Hong Kong interface appears, export any existing records, close all tabs/windows of the app and reopen the link. Do not clear site data to update. Once on Scout 2, use **Update app** when offered.
 - Web and Android installations have separate local notebooks. Export a field ZIP and import it into the other installation to move records. The APK is a debug build, not an app-store release; export before uninstalling it.
 
 The website and Android package are two editions of Scout. Adding the website to the home screen does not give it Android sensor access. The Lighting panel checks capabilities first: it offers live capture when available, otherwise explains the current limitation and keeps manual entry available. Browser camera brightness is not substituted for lux.
+
+## Clapperboard and camera EV · 2.1.6
+
+The camera slate now resembles a film clapperboard: black-and-white striped sticks, a large stop/scene code, ruled time/light cells, GPS/weather, QR and readable trip/stop IDs. It keeps the actual Scout identifiers and the visible bottom action buttons; no fictional take/roll fields or clap action are added.
+
+In the Android app, open the slate and tap **Camera EV · aim & save** (**主摄 EV · 瞄准测光**). A rear-camera viewfinder shows a target and live EV100. Aim at the lit surface or scene you want to reference, hold steady, then tap **Save EV to slate**. Scout returns to the same slate with the saved reading. Cancelling, unavailable metadata or camera permission failure leaves the previous reading intact. This mode does not take a photograph or create a gallery file.
+
+This is an **uncalibrated reflected-light EV100 estimate**, separate from incident lux. Directly aiming at a bright bulb or the sun can exceed the camera's range; a lit neutral surface is more useful for environment-lighting reference. Phone exposure algorithms, target reflectance and framing affect the result. Stability does not establish accuracy, and the Sony lens cover remains an uncalibrated target.
+
+The estimate uses the camera's reported aperture, shutter duration, sensor ISO and post-RAW sensitivity gain, normalized to ISO 100. Scout prefers a logical rear camera at 1x; phone APIs do not universally identify a physical main lens. Where supported, it requests the central 20% of sensor width/height for AE and labels this as a camera-algorithm request, not a calibrated spot meter. Otherwise it labels whole-frame AE. A converged, stable, recent exposure is required before saving; a preview highlight check blocks obvious clipping but is not a RAW clipping measurement. Device/camera ID, actual settings, sampling evidence and time travel with the reading in the field ZIP. See Android's [exposure-result contract](https://developer.android.com/reference/android/hardware/camera2/CaptureResult#SENSOR_EXPOSURE_TIME), [post-RAW sensitivity](https://developer.android.com/reference/android/hardware/camera2/CaptureResult#CONTROL_POST_RAW_SENSITIVITY_BOOST) and [AE regions](https://developer.android.com/reference/android/hardware/camera2/CaptureRequest#CONTROL_AE_REGIONS).
+
+The browser displays transferred camera readings and retains manual EV/lux entry; it cannot run this Camera2 meter. The original Android lux sensor remains available as a separate option. Before relying on camera EV on the S25 Edge or Xiaomi, compare the same surface and framing against a known meter, and test permission denial, interruption and bright/dim scenes on the actual phone.
 
 ## Field Guide and PC Workspace · 2.1.5
 
@@ -43,7 +55,7 @@ For phone browsers, use HTTPS and open the app once online before relying on off
 ## The shooting workflow
 
 1. **Capture here now.** First use can create a dated trip without typing a city or name. Or choose **Plan a trip** for an itinerary and time zone. Opening the Sony slate for an open stop automatically requests a fresh GPS fix in the background, including when reopening it. Returning from light entry or cancelling a light sample stays in the same slate session without requesting GPS again. Viewing a finished stop preserves its historic coordinates. Coordinates, accuracy, capture time and fix time save automatically; online weather is fetched for the new location. Permission/network failure never blocks shooting.
-2. **Measure light on the Sony slate, then photograph it.** On supported devices, tap **Measure EV + lux · 4 seconds**. Hold the screen facing up at the stop with the sensor clear, then turn the saved slate toward the Sony. Or use **Enter EV / lux** for a separate meter reading. The slate shows the saved reading, source and time together with the code, current clock, GPS and readable trip/stop IDs. Photograph it with your A7CR, then tap **Code photographed → continue**. Choose **Phone only / skip code** when appropriate. This is your confirmation, not automatic QR recognition.
+2. **Measure light on the Sony slate, then photograph it.** In Android, tap **Camera EV · aim & save**, aim the rear camera at a lit surface and save the stable estimate. For incident-sensor lux instead, tap **Measure EV + lux · 4 seconds** on supported devices, holding the screen facing up with the sensor clear. Then turn the saved slate toward the Sony. Or use **Enter EV / lux** for a separate meter reading. The slate shows the saved reading, source and time together with the code, current clock, GPS and readable trip/stop IDs. Photograph it with your A7CR, then tap **Code photographed → continue**. Choose **Phone only / skip code** when appropriate. This is your confirmation, not automatic QR recognition.
 3. **Capture the vibe.** Use **Take vibe photo** for a wide atmosphere reference, choose an existing image, or skip when shooting only with the camera. Phone originals stay separate from previews.
 4. **Record more lighting only if needed.** A reading saved from the slate is already attached to the stop. Add different zones under Lighting details & readings when useful; this is optional and does not add another required flow step. The lens cover remains an uncalibrated target; preview color samples are rendered sRGB, not measured CCT or albedo.
 5. **Finish stop, then choose where to go.** Finishing saves the end time for Sony matching. **Choose next stop** lets you select any planned visit, recorded place or new destination. Choose walking, public transport or driving to see a live route in Google Maps; **Open destination in Amap** offers a mainland-China alternative. At the location, tap **Arrived · start capture**. Choosing a destination or opening a route never starts a capture or moves the previous stop's GPS. **Capture here now** remains available for spontaneous references. Starting another capture checks unfinished captures on this device across all trips and asks before finishing them.
@@ -124,14 +136,14 @@ The importer verifies the copied files it reads. It does not compare the desktop
 
 | Device / mode | Field notes, photos, GPS, packages | Live lighting |
 | --- | --- | --- |
-| Samsung S25 Edge / Xiaomi Android app | Implemented | Android `TYPE_LIGHT`, only if the device exposes it |
+| Samsung S25 Edge / Xiaomi Android app | Implemented | Rear-camera EV estimate when Camera2 metadata is exposed; separate `TYPE_LIGHT` lux sensor when available |
 | Android browser / installed PWA | Implemented over HTTPS | Manual; experimental browser ambient-light API only when exposed |
 | Recent iPhone Safari / home-screen app | Web workflow implemented; physical-device testing pending | Manual lux or meter EV100 |
 | Desktop browser | Capture/review/import/export | Manual entries |
 
 The Android bridge samples actual light-sensor events for four seconds. It rejects missing events and reported saturation, and cancels on backgrounding. It records event count and range; a stable sensor may report only one event. This is an event mean, not a calibrated time-integrated incident-light reading. The phone sensor's spectral response, placement and shielding can differ substantially between devices.
 
-Native camera-based EV/CCT estimation, iOS native sensor integration, live camera tethering, automatic QR recognition, cloud sync and automated AI sorting are **not implemented**. The code/QR is a photographed identifier for manual review in this version. Image-derived color and exposure settings are never labelled as calibrated light readings.
+Calibrated photometry, camera-derived CCT, iOS native sensor integration, live camera tethering, automatic QR recognition, cloud sync and automated AI sorting are **not implemented**. The code/QR is a photographed identifier for manual review in this version. Image-derived color and exposure settings are never labelled as calibrated light readings.
 
 ## Android build
 
@@ -175,12 +187,13 @@ Small tombstones keep names/filenames, IDs, revision ancestry and required captu
 
 ## Development and validation
 
+- `npm run test:camera-ev`: isolated Android-bridge fixtures for camera EV save/cancel/failure, duplicate taps, unchanged GPS on return, bilingual clapperboard layout and visible mobile footer controls. This does not exercise a physical camera.
 - `npm run test:workspace`: isolated desktop camera import, EXIF, duplicates, RAW fallback/enrichment, range/keyboard selection, batch assignment, Trash/Undo/Restore, bilingual layout, mobile controls and export.
 - `npm test`: model, transactional storage, packages, clocks, solar dates and desktop importer integration.
 - `npm run test:cleanup`: isolated Chromium tests for single/bulk deletion, cancellation, shared-file retention, stale imports, cascade cleanup, last-trip reload, bilingual controls and mobile confirmation-button bounds.
 - `npm run test:browser`: Chromium workflow including mobile layout, controlled GPS, offline reload, lighting, image/color notes, catalogue review, handoff restore, repeated import and v1 migration. Starts its own local test server. Install a test browser with `npx playwright install chromium` if none is available.
 - `SCOUT_TEST_ENGINE=webkit npm run test:browser`: optional WebKit pass after installing its Playwright browser. Desktop engine tests do not replace iPhone testing.
-- Android: `./gradlew :app:testDebugUnitTest` from `android/` runs native preview geometry and size-selection regressions (use `gradlew.bat` on Windows).
+- Android: `./gradlew :app:testDebugUnitTest` from `android/` runs native EV formula/stability, preview geometry/size-selection and original-copy regressions (use `gradlew.bat` on Windows).
 - `npm run build`: bundles dependencies locally, fingerprints the offline cache and generates Capacitor assets.
 
 See [HANDOFF.md](HANDOFF.md) for implementation boundaries, validation evidence and the next device checks.

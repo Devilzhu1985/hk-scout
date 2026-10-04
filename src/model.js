@@ -1,3 +1,4 @@
+import {validCameraMeter} from './camera-ev.js';
 import {validWeather} from './weather.js';
 export const VERSION = 2;
 export const uid = () => crypto.randomUUID();
@@ -70,6 +71,7 @@ export function validateRecords(records) {
     if (r.kind === 'reading') {
       assert(methods.includes(r.method) && Number.isFinite(r.value) && (r.method.endsWith('lux') ? r.value>=0 : true), 'Invalid lighting reading.');
       assert(text(r.setId,180) && text(r.instrument,200) && text(r.protocol,500) && text(r.calibration,200) && date(r.measuredAt), 'Incomplete measurement provenance.');
+      if(r.cameraMeter!==undefined)assert(r.method==='camera_ev'&&validCameraMeter(r.cameraMeter,r.value),'Invalid camera EV evidence.');
     }
     if (r.kind === 'asset') {
       assert(text(r.fileName,500) && ['field','camera'].includes(r.source) && (!r.setId || text(r.setId,180)) && text(r.notes ?? ''), 'Invalid image record.');
