@@ -1,5 +1,8 @@
 {
-  "name": "hk-scout", "version": "2.1.4", "private": true, "type": "module",
+  "name": "hk-scout",
+  "version": "2.1.5",
+  "private": true,
+  "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
     "start": "node scripts/serve.mjs",
@@ -8,10 +11,33 @@
     "test:cleanup": "node tests/cleanup.browser.mjs",
     "test:navigation": "node tests/navigation.browser.mjs",
     "catalogue": "node scripts/catalogue.mjs",
-    "android:sync": "npm run build && cap sync android"
+    "android:sync": "npm run build && cap sync android",
+    "test:workspace": "node tests/workspace.browser.mjs"
   },
-  "dependencies": { "@capacitor/core": "8.5.2", "@capacitor/android": "8.5.2", "@capacitor/filesystem": "^8.0.0", "@capacitor/share": "^8.0.0", "@capacitor/geolocation": "^8.0.0", "fflate": "^0.8.2", "qrcode": "^1.5.4" },
-  "devDependencies": { "@capacitor/cli": "8.5.2", "esbuild": "^0.28.2", "exiftool-vendored": "38.3.0", "fake-indexeddb": "^6.0.0", "@playwright/test": "^1.58.0", "sharp": "0.35.5" },
-  "overrides": { "xcode": { "uuid": "11.1.1" } },
-  "engines": { "node": ">=22" }
+  "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/filesystem": "^8.0.0",
+    "@capacitor/geolocation": "^8.0.0",
+    "@capacitor/share": "^8.0.0",
+    "exifr": "7.1.3",
+    "fflate": "^0.8.2",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2",
+    "@playwright/test": "^1.58.0",
+    "esbuild": "^0.28.2",
+    "exiftool-vendored": "38.3.0",
+    "fake-indexeddb": "^6.0.0",
+    "sharp": "0.35.5"
+  },
+  "overrides": {
+    "xcode": {
+      "uuid": "11.1.1"
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  }
 }

@@ -22,7 +22,9 @@ import org.json.*;
 public class ReferenceCameraActivity extends Activity implements TextureView.SurfaceTextureListener {
     private TextureView texture;
     private TextView status;
-    private Button shutter,wbButton;
+    private Button shutter,wbButton,wideButton;
+    private volatile float requestedZoom=1f;
+    private float wideZoom=1f;
     private String cameraHelp="";
     private CheckBox rawToggle;
     private Spinner whiteBalance;
@@ -66,6 +68,7 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
         rawToggle=new CheckBox(this);rawToggle.setText("RAW + JPEG");rawToggle.setTextColor(Color.WHITE);rawToggle.setTextSize(12);rawToggle.setEnabled(false);top.addView(rawToggle,new LinearLayout.LayoutParams(-2,dp(48)));layout.addView(top);
         FrameLayout viewfinder=new FrameLayout(this);viewfinder.setBackgroundColor(Color.BLACK);
         texture=new TextureView(this);texture.setOpaque(false);texture.setSurfaceTextureListener(this);viewfinder.addView(texture,new FrameLayout.LayoutParams(-1,-1));layout.addView(viewfinder,new LinearLayout.LayoutParams(-1,0,1));
+        wideButton=new Button(this);wideButton.setVisibility(View.GONE);wideButton.setTextColor(Color.WHITE);wideButton.setBackgroundColor(Color.rgb(35,45,37));wideButton.setOnClickListener(v->{if(busy)return;requestedZoom=requestedZoom<1f?1f:wideZoom;if(requestedZoom<1f){rawToggle.setChecked(false);Toast.makeText(this,tr("Wide framing saves JPEG. Select Main for RAW.","广角画面保存为 JPEG；拍摄 RAW 请切换主摄。"),Toast.LENGTH_LONG).show();}rawToggle.setEnabled(rawSize!=null&&requestedZoom==1f);wideButton.setText(requestedZoom<1f?tr("Wide · ","广角 · ")+String.format(Locale.US,"%.2f×",requestedZoom)+tr("  → Main","  → 主摄"):tr("Main · 1×  → Wide","主摄 · 1×  → 广角"));worker.post(this::preview);});layout.addView(wideButton,new LinearLayout.LayoutParams(-1,dp(44)));
         status=new TextView(this);status.setText(tr("Checking camera…","正在检查相机…"));status.setTextColor(Color.WHITE);status.setTextSize(12);status.setGravity(Gravity.CENTER);status.setPadding(dp(12),dp(8),dp(12),dp(8));layout.addView(status);
         whiteBalance=new Spinner(this);kelvin=new EditText(this);kelvin.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);kelvin.setText("5500");kelvin.setHint(tr("White balance K","白平衡 K"));kelvin.setEnabled(false);
         LinearLayout controls=new LinearLayout(this);controls.setPadding(dp(12),dp(4),dp(12),dp(4));controls.setGravity(Gravity.CENTER);
@@ -109,6 +112,7 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
             int score=raw?2:1;if(score>best){best=score;cameraId=id;characteristics=c;}
         }
         if(cameraId==null)throw new Exception("No supported rear camera");
+        if(Build.VERSION.SDK_INT>=30){Range<Float> zoom=characteristics.get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE);if(zoom!=null&&zoom.getLower()>0f&&zoom.getLower()<1f&&characteristics.getAvailableCaptureRequestKeys().contains(CaptureRequest.CONTROL_ZOOM_RATIO))wideZoom=zoom.getLower();}
         StreamConfigurationMap map=characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         jpegSize=largest(map.getOutputSizes(ImageFormat.JPEG),24000000);
         rawSize=contains(characteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES),CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_RAW)?largest(map.getOutputSizes(ImageFormat.RAW_SENSOR),24000000):null;
@@ -134,6 +138,7 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
     }catch(Exception e){fail(e.getMessage(),"无法打开相机："+e.getMessage());}}
     private void configureControls(){
         rawToggle.setEnabled(rawSize!=null);rawToggle.setChecked(rawSize!=null);
+        if(wideZoom<1f){wideButton.setVisibility(View.VISIBLE);wideButton.setText(tr("Main · 1×  → Wide","主摄 · 1×  → 广角"));}
         rawToggle.setText(rawSize==null?"JPEG":"RAW + JPEG");
         ArrayList<String> labels=new ArrayList<>();int[] available=characteristics.get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES);
         int[] candidates={1,2,3,4,5,6,7,8};String[] en={"Auto white balance","Incandescent","Fluorescent","Warm fluorescent","Daylight","Cloudy","Twilight","Shade"};String[] zh={"自动白平衡","白炽灯","荧光灯","暖荧光灯","日光","阴天","暮光","阴影"};
@@ -142,6 +147,7 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
         whiteBalance.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,labels));
         whiteBalance.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onItemSelected(AdapterView<?> p,View v,int i,long id){kelvin.setEnabled(wbModes.get(i)==-1);kelvin.setVisibility(wbModes.get(i)==-1?View.VISIBLE:View.GONE);}public void onNothingSelected(AdapterView<?> p){}});
         cameraHelp=tr("JPEG is processed. RAW keeps sensor data; WB remains editable. ","JPEG 已经过处理；RAW 保留传感器数据，白平衡可后期调整。 ")+(cctAvailable?tr("Manual K range: ","手动 K 范围：")+kelvinRange:tr("This camera does not expose manual Kelvin. Use a supported WB preset, or the phone camera’s Pro mode and import its files.","此相机未开放手动 K。可选白平衡预设，或在系统相机专业模式拍摄后导入。"));
+        cameraHelp+="\n\n"+tr("Wide framing is offered only when this camera exposes zoom below 1×. It saves JPEG; RAW keeps the sensor framing. Other lenses may require the system camera.","仅当此相机开放低于 1× 的变焦时提供广角构图，并保存 JPEG；RAW 保留传感器画幅。其他镜头可能需要使用系统相机。 ");
         cameraHelp+="\n\nJPEG "+jpegSize+(rawSize!=null?" · DNG "+rawSize:"")+"\n\n"+tr("Originals are copied unchanged to DCIM/Camera and linked to this Scout capture. Gallery apps may display only the JPEG preview of a RAW pair.","原片原样保存至 DCIM/Camera，并关联此次 Scout 记录。部分相册只显示 RAW 配对中的 JPEG 预览。");
         status.setText(tr("Auto exposure · autofocus · rear camera","自动曝光 · 自动对焦 · 后置相机"));wbButton.setEnabled(!wbModes.isEmpty());
         transform();
@@ -160,6 +166,7 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
     }catch(Exception e){fail(e.getMessage(),"相机配置失败："+e.getMessage());}}
     private void configure(CaptureRequest.Builder builder){
         builder.set(CaptureRequest.CONTROL_MODE,CaptureRequest.CONTROL_MODE_AUTO);
+        if(Build.VERSION.SDK_INT>=30&&wideZoom<1f)builder.set(CaptureRequest.CONTROL_ZOOM_RATIO,requestedZoom);
         int[] focus=characteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);if(contains(focus,CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE))builder.set(CaptureRequest.CONTROL_AF_MODE,CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
         builder.set(CaptureRequest.CONTROL_AE_MODE,CaptureRequest.CONTROL_AE_MODE_ON);
         builder.set(CaptureRequest.CONTROL_AWB_MODE,requestedWb==-1?CaptureRequest.CONTROL_AWB_MODE_OFF:requestedWb);
@@ -177,7 +184,7 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
         requestedWb=mode;requestedKelvin=k;return true;
     }catch(Exception e){Toast.makeText(this,tr("Enter Kelvin within ","请输入范围内的色温 K：")+kelvinRange,Toast.LENGTH_LONG).show();return false;}}
     private void applyWhiteBalance(){if(!busy&&readWhiteBalance())worker.post(this::preview);}
-    private void capture(){if(busy||closing||!readWhiteBalance())return;rawEnabled=rawToggle.isChecked()&&rawReader!=null;busy=true;shutter.setEnabled(false);wbButton.setEnabled(false);status.setText(tr("Saving originals…","正在保存原片…"));rawToggle.setEnabled(false);whiteBalance.setEnabled(false);kelvin.setEnabled(false);worker.post(()->{try{
+    private void capture(){if(busy||closing||!readWhiteBalance())return;rawEnabled=rawToggle.isChecked()&&rawReader!=null&&requestedZoom==1f;busy=true;wideButton.setEnabled(false);shutter.setEnabled(false);wbButton.setEnabled(false);status.setText(tr("Saving originals…","正在保存原片…"));rawToggle.setEnabled(false);whiteBalance.setEnabled(false);kelvin.setEnabled(false);worker.post(()->{try{
         captureId=UUID.randomUUID().toString();jpegBytes=null;captureResult=null;session.stopRepeating();
         CaptureRequest.Builder b=camera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);configure(b);b.addTarget(jpegReader.getSurface());if(rawEnabled)b.addTarget(rawReader.getSurface());b.set(CaptureRequest.JPEG_ORIENTATION,orientation);b.set(CaptureRequest.JPEG_QUALITY,(byte)100);
         worker.postDelayed(timeout,20000);session.capture(b.build(),new CameraCaptureSession.CaptureCallback(){public void onCaptureCompleted(CameraCaptureSession s,CaptureRequest request,TotalCaptureResult result){captureResult=result;finishCapture();}public void onCaptureFailed(CameraCaptureSession s,CaptureRequest request,CaptureFailure failure){fail("Capture failed; no reference saved","拍摄失败，未保存参考照片");}},worker);
@@ -190,7 +197,7 @@ public class ReferenceCameraActivity extends Activity implements TextureView.Sur
         File jpeg=new File(dir,captureId+".jpg");try(FileOutputStream out=new FileOutputStream(jpeg)){out.write(jpegBytes);out.getFD().sync();}
         JSONArray files=new JSONArray();files.put(fileInfo(jpeg,"image/jpeg"));
         if(rawEnabled){File raw=new File(dir,captureId+".dng");try(DngCreator creator=new DngCreator(characteristics,captureResult);FileOutputStream out=new FileOutputStream(raw)){creator.setOrientation(orientation==90?6:orientation==270?8:orientation==180?3:1);creator.writeImage(out,rawImage);out.getFD().sync();}finally{rawImage.close();rawImage=null;}files.put(fileInfo(raw,"image/x-adobe-dng"));}
-        JSONObject result=new JSONObject();result.put("id",captureId);result.put("setId",getIntent().getStringExtra("setId"));result.put("files",files);result.put("capturedAt",java.time.Instant.now().toString());result.put("device",Build.MANUFACTURER+" "+Build.MODEL);result.put("cameraId",cameraId);result.put("raw",rawEnabled);result.put("requestedWbMode",requestedWb);result.put("actualAwbMode",captureResult.get(CaptureResult.CONTROL_AWB_MODE));result.put("iso",captureResult.get(CaptureResult.SENSOR_SENSITIVITY));result.put("exposureNs",captureResult.get(CaptureResult.SENSOR_EXPOSURE_TIME));
+        JSONObject result=new JSONObject();result.put("id",captureId);result.put("setId",getIntent().getStringExtra("setId"));result.put("files",files);result.put("capturedAt",java.time.Instant.now().toString());result.put("device",Build.MANUFACTURER+" "+Build.MODEL);result.put("cameraId",cameraId);result.put("raw",rawEnabled);result.put("requestedZoomRatio",requestedZoom);if(Build.VERSION.SDK_INT>=30)result.put("actualZoomRatio",captureResult.get(CaptureResult.CONTROL_ZOOM_RATIO));result.put("requestedWbMode",requestedWb);result.put("actualAwbMode",captureResult.get(CaptureResult.CONTROL_AWB_MODE));result.put("iso",captureResult.get(CaptureResult.SENSOR_SENSITIVITY));result.put("exposureNs",captureResult.get(CaptureResult.SENSOR_EXPOSURE_TIME));
         if(requestedWb==-1){result.put("requestedKelvin",requestedKelvin);if(Build.VERSION.SDK_INT>=36){result.put("actualKelvin",captureResult.get(CaptureResult.COLOR_CORRECTION_COLOR_TEMPERATURE));result.put("actualColorMode",captureResult.get(CaptureResult.COLOR_CORRECTION_MODE));}}
         GalleryWriter.writeManifest(this,result);
         // Album failure is recoverable and must not discard the staged capture.

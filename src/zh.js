@@ -1,4 +1,95 @@
 export const zh=Object.fromEntries(`
+Camera originals stay in their source folders. Scout stores metadata and previews.	相机原片保留在源文件夹中，Scout 保存元数据和预览。
+
+new or enriched files	个新增或补充信息的文件
+Bring your shoot together.	汇总这次拍摄。
+Start with the phone ZIP to restore stops, GPS, light and vibe references. Then add your camera folder.	先导入手机 ZIP，恢复地点、GPS、测光和氛围参考，再添加相机文件夹。
+Create a trip	创建行程
+
+WORKSPACE	整理工作台
+FIELD GUIDE	采集助手
+SCOUT WORKSPACE	SCOUT 整理工作台
+Capture	采集
+Stops	地点
+Files	文件
+Send to PC	发送到电脑
+Trip	行程
+Bring the place back. Build your reference library.	把现场带回来，整理成参考图库。
+Import phone ZIP	导入手机 ZIP
+Add camera folder	添加相机文件夹
+Add camera files	添加相机文件
+All files	全部文件
+Unassigned	待分配
+Phone references	手机参考
+Camera files	相机文件
+Project Trash	项目回收站
+Stops & field data	地点与现场数据
+Originals stay in your camera folders. Scout stores a catalogue and previews.	原片保留在相机文件夹中，Scout 保存目录信息与预览。
+Search files, cameras, roles or notes	搜索文件、相机、分类或备注
+Filter by stop	按地点筛选
+Filter by camera	按相机筛选
+All stops	全部地点
+All cameras	全部相机
+shown	项已显示
+selected	项已选择
+Trash keeps files until you delete them permanently. Restore here, or permanently remove selected Scout copies.	回收站会保留文件。可在这里恢复，或永久移除选中的 Scout 副本。
+Click a tile to select. Shift selects a range. Ctrl / ⌘ A selects all shown.	点击缩略图选择；Shift 连选；Ctrl / ⌘ A 选择所有显示项。
+Files moved to Project Trash.	文件已移入项目回收站。
+Undo	撤销
+Camera file	相机文件
+Review	查看
+No files here yet	这里还没有文件
+Import a phone ZIP, add camera files, or change the filters.	导入手机 ZIP、添加相机文件，或调整筛选条件。
+Restore selected	恢复所选
+Delete selected permanently	永久删除所选
+Assign selected to stop	将所选文件分配到地点
+Choose stop…	选择地点…
+Assign	分配
+Role for selected images	所选图片分类
+Set role	设置分类
+Move to Trash	移入回收站
+Scene context	现场信息
+Vibe reference	氛围参考
+Phone vibe reference	手机氛围参考
+Open stop	打开地点
+Assign this file to a stop to see its field data.	将文件分配到地点后，即可查看现场数据。
+Import details	导入详情
+Vibe references	氛围参考
+Take vibe photo	拍摄氛围照
+vibe	氛围
+Use the phone for a wide view of the atmosphere. Add detailed camera images on your PC later.	用手机拍摄广角氛围参考，之后在电脑上加入相机细节照片。
+2 · Capture the vibe	2 · 记录氛围
+Take a wide view of the atmosphere. Detailed camera images come together on your PC.	拍一张广角氛围照，相机细节照片之后在电脑上汇总。
+3 · Finish this stop	3 · 完成本地点
+01 · Slate & light	01 · 识别板与测光
+02 · Vibe photo	02 · 氛围照
+03 · Finish	03 · 完成
+Place & notes	地点与备注
+Select images first.	请先选择图片。
+Files changed. Select them again.	文件已变化，请重新选择。
+Resolve related import conflicts first.	请先处理相关导入冲突。
+Choose a stop in the same trip.	请选择同一行程中的地点。
+Choose a stop first.	请先选择地点。
+An import is already running.	已有导入任务正在进行。
+Reading camera files	正在读取相机文件
+Files are read locally. Originals stay unchanged.	文件仅在本地读取，原片保持不变。
+Review camera import	检查相机导入
+new files	个新文件
+duplicates	个重复文件
+unsupported files	个非支持类型文件
+previews	个预览
+without a camera timestamp	个文件缺少相机拍摄时间
+Camera files remain unassigned until you review their stop or clock match.	相机文件会先进入待分配列表，待你检查地点或时间匹配。
+RAW preview support varies. The desktop RAW importer can supply previews and full metadata.	浏览器对 RAW 预览的支持因格式而异。桌面 RAW 导入器可补充预览与完整元数据。
+files could not be read	个文件无法读取
+Import camera files	导入相机文件
+Choose up to 500 camera files per import, or use the desktop RAW importer.	每批请选择不超过 500 个相机文件，或使用桌面 RAW 导入器。
+File is empty or larger than 256 MiB. Use the desktop RAW importer.	文件为空或超过 256 MiB，请使用桌面 RAW 导入器。
+Metadata unavailable in browser; use the desktop RAW importer for full extraction.	浏览器无法读取元数据；请使用桌面 RAW 导入器完整提取。
+Preview unavailable in browser; import a desktop catalogue for a RAW preview.	浏览器无法显示预览；请导入桌面目录包以补充 RAW 预览。
+Preview budget reached. Choose a smaller folder.	预览已达到本批大小限制，请选择较小的文件夹。
+No readable camera timestamp; assign this image manually.	没有可读取的相机拍摄时间，请手动分配图片。
+
 Permanent deletions in this package	此导入包包含永久删除
 These records cannot be restored in this notebook. Leftover image files can be removed afterward in Storage & cleanup.	这些记录无法在当前记录本中恢复。余下的图片文件可随后在“存储与清理”中移除。
 Apply these deletions to this device.	在本设备执行这些删除。
@@ -475,7 +566,7 @@ Save sample in image notes	将取样保存到图片笔记
 Saved GPS with low accuracy. Add a landmark note.	已保存低精度 GPS，请补充地标说明。
 Saved on this device	已保存到本机
 Saving…	正在保存…
-Scout 2.1.4 · local files first · no analytics or automatic cloud/AI upload	Scout 2.1.4 · 本地文件优先 · 无统计跟踪或自动云端 / AI 上传
+Scout 2.1.5 · local files first · no analytics or automatic cloud/AI upload	Scout 2.1.5 · 本地文件优先 · 无统计跟踪或自动云端 / AI 上传
 Scout ZIP, desktop catalogue ZIP, or original v1 JSON backup.	Scout ZIP、电脑目录 ZIP 或原 v1 JSON 备份。
 Scout built-in light meter	Scout 内置测光
 Scout for Android	安卓 Scout

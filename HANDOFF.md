@@ -1,10 +1,28 @@
-# Scout 2.1.4 implementation handoff
+# Scout 2.1.5 implementation handoff
 
 Date: 2026-10-03. Repository: hk-scout. This is the local implementation handoff, distinct from the shoot-specific HANDOFF.md generated inside each export.
 
 ## Phone test publication
 
-The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.4-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.5-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+
+## Field Guide and PC Workspace · 2.1.5
+
+Approved direction: Field Guide phone capture and Contact Sheet desktop organization, with scene context during review. User requested deployment after reviewing the standalone UI mockups. The production implementation uses existing Scout records; mockup sample data and simulated actions are not bundled.
+
+Capture: new light/off-white/green visual system, three-step Slate & light → Vibe photo → Finish card, collapsed place editor, existing optional light details and explicit end-time capture. Phone assets added from this release default to `vibe`; historical classifications are not backfilled. Android and narrow browser windows start in capture; desktop browsers >=900px start in Library. The same application and database retain access to all features. Files and Send to PC are prominent phone destinations; camera-folder importing is promoted on desktop. English and Simplified Chinese labels are included.
+
+Workspace: source/stop/camera/search filters; large tile selection; Shift-range and Ctrl/Command A when not editing text; visible-result select-all; atomic batch stop assignment and role changes; per-image scene inspector with time, GPS, saved light/weather and phone vibe when linked. Project Trash reuses schema-2 `deleted` without `purgedAt`; it retains bytes and can be restored after reload. Immediate Undo checks the exact revisions created by its own removal. Stale revisions, related unresolved import conflicts and deleted parents reject the whole batch. Permanent deletion remains the existing reviewed generation-checked cleanup. Camera/DCIM/ZIP files are never deleted by these operations.
+
+Local camera-file import uses pinned exifr 7.1.3 (bundled offline), Web Crypto SHA-256 and browser preview decoding. Picked files never leave the browser. Original hash creates the stable trip-scoped camera asset ID; previews have content-derived blob IDs so different preview generators cannot collide. Wall-clock EXIF text is retained without an implicit PC timezone or mtime fallback. Files enter unassigned; clock suggestions still require confirmation. Multiple camera models filter independently, but same-model bodies still share the existing camera-name clock matching model and require manual review. No automatic serial-number reconciliation is claimed.
+
+Browser import accepts up to 500 supported files per batch, 256 MiB each, and a 48 MiB preview budget. Preview-less RAW files keep their hash/relative path and available metadata with warnings. The existing ExifTool desktop importer remains the fuller RAW path. A later catalogue can enrich an active preview-less record, validating its reviewed revision and related conflicts before commit, while retaining role, notes, tags and stop association. Existing preview-bearing records are skipped. Cancelled reading commits nothing; failure counts are visible before import. Store.change is still the sole write owner; the batch mutation module validates all rows before updating them. No schema or database migration is needed. Trash follows existing revision-aware ZIP merge semantics; an old package cannot undo a newer trash/purge marker. Browser storage is not a PC filesystem archive or phone sync service.
+
+Native camera: a Main/Wide control is available only for an advertised Camera2 zoom-ratio minimum below 1 on API 30+. Wide selection explicitly turns off RAW for that frame and informs the user that it saves processed JPEG. Main retains existing RAW support. Requested and reported zoom ratios travel in the capture evidence. No undocumented OEM Pro-mode invocation, invented sensor reading or fixed ultrawide ratio was introduced. Some manufacturers may hide auxiliary lenses or constrain the stream combination; physical validation remains necessary. The existing preview geometry, manual-K capability gate and GalleryWriter recovery/publish paths are preserved.
+
+Validation: 45 JS unit/integration cases, including new reversible batch, stale Undo rollback, filter/range and camera-wall-time cases. Isolated Chromium workspace flow covers field ZIP upgrade/import, real JPEG EXIF, duplicate content, unsupported RAW fixture warnings, catalogue preview enrichment preserving edits, range/keyboard selection, batch assignment/roles, Trash/Undo/reload/Restore, inspector context, export and responsive bilingual controls. Cleanup, navigation and full capture/transfer/offline regressions passed. Desktop and phone screenshots inspected. All 13 Android JVM preview/original-copy tests and debug assembly passed. These are disposable profiles and synthetic fixtures; no real user notebook was cleared. No physical phone or real Sony RAW decoding validation is claimed for the browser importer.
+
+Release: versionName 2.1.5 / versionCode 9; same app ID and signing identity. Both public browser assets and the APK are published from the tested commit. Markdown affected: README.md and HANDOFF.md.
 
 ## Permanent notebook cleanup · 2.1.4
 

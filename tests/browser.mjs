@@ -43,9 +43,9 @@ try{
   await page.getByRole('button',{name:'Code photographed → continue',exact:true}).click();await expect(page.locator('#modal')).not.toBeVisible();
   await page.locator('#lighting-details summary').click();await expect(page.getByText('Live lux is unavailable in this browser',{exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'Measure light',exact:true})).toHaveCount(0);
-  await expect(page.getByRole('link',{name:'Download Scout for Android',exact:true})).toHaveAttribute('href',/scout-2\.1\.4-preview\.1-debug\.apk$/);
+  await expect(page.getByRole('link',{name:'Download Scout for Android',exact:true})).toHaveAttribute('href',/scout-2\.1\.5-preview\.1-debug\.apk$/);
   await expect(page.getByText(/complete Scout app/)).toBeVisible();
-  await page.locator('#set-name').fill('Sham Shui Po · awning');
+  await page.locator('#place-details').evaluate(el=>el.open=true);await page.locator('#set-name').fill('Sham Shui Po · awning');
   await page.locator('#set-name').press('Tab');
   await expect(page.locator('#saved')).toHaveText('Saved on this device');
   if(engine===chromium){
@@ -129,7 +129,7 @@ try{
   await legacy.addInitScript(()=>{localStorage.setItem('hkscout_v1',JSON.stringify({v:1,settings:{wb:5500,fnum:1.8},points:[{id:'old',t:Date.parse('2026-01-01T00:00:00Z'),place:'Legacy street',notes:'Keep me',photos:[],lux:{A:50}}]}));});
   const third=await legacy.newPage();await third.goto(origin);
   await expect(third.getByRole('heading',{name:'Hong Kong · imported records',exact:true})).toBeVisible();
-  await third.getByRole('button',{name:'Open',exact:true}).click();
+  await third.locator('#nav [data-id=field]').click();await third.getByRole('button',{name:'Open',exact:true}).click();
   await expect(third.locator('#set-form [name=notes]')).toHaveValue(/Keep me/);
   // Controlled sensor fixture: verifies in-app integration, never hardware accuracy.
   const sensorContext=await browser.newContext({viewport:{width:390,height:844}});
@@ -209,18 +209,18 @@ try{
   await simple.route('https://api.github.com/repos/Devilzhu1985/hk-scout/releases*',route=>route.fulfill({json:[{tag_name:'v9.0.0-preview.1',prerelease:true,assets:[{name:'scout-9.0.0-debug.apk',browser_download_url:'https://github.com/Devilzhu1985/hk-scout/releases/download/v9.0.0-preview.1/scout-9.0.0-debug.apk',digest:'sha256:'+'a'.repeat(64),size:1000000}]}]}));
   await simple.goto(origin);await simple.getByRole('button',{name:'Capture here now',exact:true}).click();
   await simple.locator('#modal').getByRole('button',{name:'Phone only / skip code',exact:true}).click();await expect(simple.locator('#modal')).not.toBeVisible();
-  await simple.locator('#set-name').fill('Open'); // Matches a UI label; must remain user content.
+  await simple.locator('#place-details').evaluate(el=>el.open=true);await simple.locator('#set-name').fill('Open'); // Matches a UI label; must remain user content.
   await simple.locator('#set-name').press('Tab');await expect(simple.locator('#saved')).toHaveText('Saved on this device');
   await simple.evaluate(()=>window.pendingGPS());
   await expect(simple.locator('#set-form').getByText(/22.31930, 114.16940/)).toBeVisible();
   await expect(simple.locator('#set-name')).toHaveValue('Open');
   await simple.locator('#set-form [name=notes]').fill('Keep my English notes: Open, Finish stop, Lighting.');
   await simple.locator('#language').selectOption('zh');
-  await expect(simple.locator('#next-step h2')).toHaveText('2 · 拍摄手机参考图');
+  await expect(simple.locator('#next-step h2')).toHaveText('2 · 记录氛围');
   await expect(simple.locator('#set-name')).toHaveValue('Open');
   await expect(simple.locator('#set-form [name=notes]')).toHaveValue('Keep my English notes: Open, Finish stop, Lighting.');
   await expect(simple.locator('html')).toHaveAttribute('lang','zh-CN');
-  await simple.getByRole('button',{name:'拍摄参考图',exact:true}).click();
+  await simple.locator('#next-step').getByRole('button',{name:'拍摄氛围照',exact:true}).click();
   await expect(simple.getByText(/浏览器可以打开相机/)).toBeVisible();
   await expect(simple.locator('#camera-file')).toHaveAttribute('capture','environment');
   await simple.getByRole('button',{name:'打开手机相机',exact:true}).click();
@@ -229,8 +229,8 @@ try{
   await simple.getByRole('button',{name:'编辑',exact:true}).click();
   await simple.locator('#asset-form [name=role]').selectOption('lighting');
   await simple.getByRole('button',{name:'保存关联',exact:true}).click();
-  await simple.getByRole('button',{name:'跳过光照',exact:true}).click();
-  await expect(simple.locator('#next-step h2')).toHaveText('4 · 完成此地点');
+
+  await expect(simple.locator('#next-step h2')).toHaveText('3 · 完成本地点');
   await simple.getByRole('button',{name:'完成此地点',exact:true}).click();
   await expect(simple.getByRole('heading',{name:'此地点已完成',exact:true})).toBeVisible();
   await simple.screenshot({path:path.join(out,'streamlined-chinese.png'),fullPage:true});
@@ -249,9 +249,9 @@ try{
   await simple.evaluate(()=>window.gpsMode='denied');
   await simple.getByRole('button',{name:'Capture here now',exact:true}).click();
   await simple.locator('#modal').getByRole('button',{name:'Phone only / skip code',exact:true}).click();await expect(simple.locator('#modal')).not.toBeVisible();
-  await expect(simple.getByText(/GPS unavailable. Keep shooting/)).toBeVisible();
+  await expect(simple.locator('#next-step')).toContainText('GPS unavailable. Keep shooting');
   await simple.getByRole('button',{name:'Sony only / skip phone photo',exact:true}).click();
-  await simple.getByRole('button',{name:'Skip lighting',exact:true}).click();
+  await expect(simple.locator('#next-step')).toContainText('3 · Finish this stop');
   await simple.getByRole('button',{name:'Finish stop',exact:true}).click();
   await expect(simple.getByRole('heading',{name:'Stop complete',exact:true})).toBeVisible();
   await simple.locator('#language').selectOption('zh');await simple.reload();
@@ -284,7 +284,7 @@ try{
   await slatePage.getByRole('button',{name:'Code photographed → continue',exact:true}).click();
   await expect(slatePage.locator('#modal')).not.toBeVisible();
   await slatePage.getByRole('button',{name:'Sony only / skip phone photo',exact:true}).click();
-  await expect(slatePage.locator('#next-step h2')).toHaveText('4 · Finish this stop');
+  await expect(slatePage.locator('#next-step h2')).toHaveText('3 · Finish this stop');
   await slatePage.locator('#language').selectOption('zh');
   await slatePage.getByRole('button',{name:'显示相机识别板',exact:true}).click();
   await expect(slatePage.locator('#slate-light')).toContainText('测光表 EV100');
