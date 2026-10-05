@@ -1,10 +1,20 @@
-# Scout 2.1.6 implementation handoff
+# Scout 2.1.7 implementation handoff
 
-Date: 2026-10-03. Repository: hk-scout. This is the local implementation handoff, distinct from the shoot-specific HANDOFF.md generated inside each export.
+Date: 2026-10-04. Repository: hk-scout. This is the local implementation handoff, distinct from the shoot-specific HANDOFF.md generated inside each export.
 
 ## Phone test publication
 
-The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.6-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+The existing GitHub Pages site builds the repository root from `main`: https://devilzhu1985.github.io/hk-scout/. The `v2.1.7-preview.1` prerelease supplies the Android debug APK and a SHA-256 checksum for a device trial. This publication does not change the physical-device validation boundary below.
+
+## Guided aiming feedback · 2.1.7
+
+User feedback: the EV aiming screen required guessing what was being measured and when it was ready. CameraMeterView now supplies prominent bracket/crosshair guides, a dimmed surround for the requested central region, a central/whole-frame mode badge, live EV100 explicitly marked unsaved, an Aim → Hold steady → Save strip, status-specific guidance, sample-derived progress and expandable exposure details. The save button is outside the bounded scrollable feedback area. A green guide is accompanied by text, not used as the sole status signal. Whole-frame devices never show a claimed central metering box. Strings are English/Simplified Chinese.
+
+CameraMeterActivity now publishes an immutable transient snapshot containing both the UI feedback and its optional save candidate. Valid current exposure metadata can appear while auto exposure is settling, but only the existing CameraExposure window can supply a save candidate. CameraMeterFeedback applies the same freshness, exposure-limit and preview-clipping checks to display/save eligibility; the save handler rechecks at tap time. Stale values hide, invalid values never become zero, and duplicate taps cannot reuse the cleared candidate. The progress indicator uses actual duration/count/spread and cannot show complete while still settling. The UI does not alter the camera selection, AE region, EV formula, stored reading schema, permissions, gallery behavior or web/native result contract. No persisted state or migration is introduced.
+
+Verification: 50 JS cases passed; the isolated Chromium camera bridge fixture passed save/cancel/error/invalid-result/reentry/GPS-reuse and bilingual clapperboard checks. All 26 Android JVM cases passed, including six new feedback tests for live-but-unsavable, partial/unstable sampling, clipping, missing preview, stale/future metadata and limits. The final Android debug APK compiled and retained the installed signing identity. Full browser capture/transfer/offline regression was also run after the version update. No phone or Android emulator was connected for native UI rendering; real-device layout, camera behavior and accuracy remain unverified. Browser fixtures do not render the native viewfinder.
+
+Release: versionName 2.1.7 / versionCode 11, same package/signature. Publish the web version marker and APK together. Complete Markdown change list: README.md and HANDOFF.md.
 
 ## Clapperboard and rear-camera EV · 2.1.6
 

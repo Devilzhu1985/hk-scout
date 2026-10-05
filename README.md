@@ -5,11 +5,19 @@ An offline field notebook for environment art and lighting reference. Use a phon
 ## Test on your phone
 
 - **Browser app:** [Open Scout](https://devilzhu1985.github.io/hk-scout/) in Chrome on Android or Safari on iPhone. Open once online, then add it to your home screen and test an offline reload.
-- **Android phone trial:** download `scout-2.1.6-preview.1-debug.apk` from the [Android test release](https://github.com/Devilzhu1985/hk-scout/releases/tag/v2.1.6-preview.1). This is the complete Scout app with its light meter built in, not a separate light-meter utility. This personal test build includes direct sensor access; browser mode generally uses manual light readings. Actual sensor availability and accuracy still need testing on your phone.
+- **Android phone trial:** download `scout-2.1.7-preview.1-debug.apk` from the [Android test release](https://github.com/Devilzhu1985/hk-scout/releases/tag/v2.1.7-preview.1). This is the complete Scout app with its light meter built in, not a separate light-meter utility. This personal test build includes direct sensor access; browser mode generally uses manual light readings. Actual sensor availability and accuracy still need testing on your phone.
 - If the old Hong Kong interface appears, export any existing records, close all tabs/windows of the app and reopen the link. Do not clear site data to update. Once on Scout 2, use **Update app** when offered.
 - Web and Android installations have separate local notebooks. Export a field ZIP and import it into the other installation to move records. The APK is a debug build, not an app-store release; export before uninstalling it.
 
 The website and Android package are two editions of Scout. Adding the website to the home screen does not give it Android sensor access. The Lighting panel checks capabilities first: it offers live capture when available, otherwise explains the current limitation and keeps manual entry available. Browser camera brightness is not substituted for lux.
+
+## Guided camera meter · 2.1.7
+
+The Android **Camera EV · aim & save** viewfinder now shows a high-contrast aiming guide, with the area outside the requested central region dimmed. The guide turns green only when the reading can be saved. Phones without region control show **Whole frame** and a crosshair explicitly labelled as an aiming aid. The metering algorithm and requested region are unchanged.
+
+The panel shows **1 Aim → 2 Hold steady → 3 Save**, a live EV100 value labelled **Live / not saved**, and real sample duration/count/spread while waiting for stability. The progress bar comes from the sample window, not an animation timer. Bright preview highlights, exposure limits, stale frames and missing metadata get specific next-action messages and cannot enable Save. Old values disappear when stale. Aperture/shutter/ISO details are expandable; the save button stays outside the scrollable feedback panel.
+
+Use a lit wall, floor or another surface you want to reference. Keep the framing still until **Stable · ready to save**, then tap **Save EV to slate**. Green means the existing freshness/stability checks passed; it does not mean the estimate has been calibrated. Both English and Simplified Chinese are included. No new image, reading or permission is created merely by viewing the live UI. This UI runs inside the Android APK; the web edition still reviews transferred readings.
 
 ## Clapperboard and camera EV · 2.1.6
 
@@ -193,7 +201,7 @@ Small tombstones keep names/filenames, IDs, revision ancestry and required captu
 - `npm run test:cleanup`: isolated Chromium tests for single/bulk deletion, cancellation, shared-file retention, stale imports, cascade cleanup, last-trip reload, bilingual controls and mobile confirmation-button bounds.
 - `npm run test:browser`: Chromium workflow including mobile layout, controlled GPS, offline reload, lighting, image/color notes, catalogue review, handoff restore, repeated import and v1 migration. Starts its own local test server. Install a test browser with `npx playwright install chromium` if none is available.
 - `SCOUT_TEST_ENGINE=webkit npm run test:browser`: optional WebKit pass after installing its Playwright browser. Desktop engine tests do not replace iPhone testing.
-- Android: `./gradlew :app:testDebugUnitTest` from `android/` runs native EV formula/stability, preview geometry/size-selection and original-copy regressions (use `gradlew.bat` on Windows).
+- Android: `./gradlew :app:testDebugUnitTest` from `android/` runs native EV formula/stability, live feedback/save eligibility, preview geometry/size-selection and original-copy regressions (use `gradlew.bat` on Windows).
 - `npm run build`: bundles dependencies locally, fingerprints the offline cache and generates Capacitor assets.
 
 See [HANDOFF.md](HANDOFF.md) for implementation boundaries, validation evidence and the next device checks.
